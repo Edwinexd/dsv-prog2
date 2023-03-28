@@ -74,4 +74,9 @@ public class Node
         return false;
     }
 
+    @Override
+    public int hashCode() {
+        return this.name.hashCode();
+    }
+
 }
