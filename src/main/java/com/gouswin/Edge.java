@@ -2,11 +2,11 @@ package com.gouswin;
 
 public class Edge {
 
-    int weight;
+    private int weight;
 
-    String name;
-    Node origin;
-    Node destination;
+    private String name;
+    private Node origin;
+    private Node destination;
 
    public Edge(String name, Node origin, Node destination, int weight) {
         this.name = name;

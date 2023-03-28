@@ -62,7 +62,7 @@ public class ListGraph {
         if (!from.hasConnection(to)) {
             throw new NoSuchElementException("Nodes are not connected");
         }
-        from.getConnection(to).weight = newWeight;
+        from.getConnection(to).setWeight(newWeight);
 
     }
 
