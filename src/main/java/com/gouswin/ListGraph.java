@@ -1,10 +1,21 @@
 package com.gouswin;
 
-import javafx.util.Pair;
 
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
+
+class PathResult
+{
+    public int distance;
+    public ArrayList<Edge> path;
+    public PathResult(int distance, ArrayList<Edge> path)
+    {
+        this.distance = distance;
+        this.path = path;
+    }
+
+}
 
 public class ListGraph {
 
@@ -113,36 +124,36 @@ public class ListGraph {
 
     }
 
-    public ArrayList<Node> getPath(Node from, Node to) throws NoSuchElementException {
+    public ArrayList<Edge> getPath(Node from, Node to) throws NoSuchElementException {
 
         if (!nodes.contains(from) || !nodes.contains(to)) {
             throw new NoSuchElementException("One or more nodes not found");
         }
 
-        ArrayList<Node> res = runDjikstra(from, to);
+        ArrayList<Edge> res = runDjikstra(from, to);
         return res;
 
     }
 
-    public ArrayList<Node> runDjikstra(Node start, Node target) {
-        ArrayList<Pair<Integer, ArrayList<Node>>> finallist = new ArrayList<>();
-        Stack<Node> nodepath = new Stack<Node>();
-        HashSet visitednodes = new HashSet<Node>();
-        HashSet<Node> unvisitednodes = (HashSet<Node>) nodes.clone();
-        int distance = 0;
+    private ArrayList<Edge> runDjikstra(Node start, Node target) {
+        ArrayList<PathResult> finallist = new ArrayList<>();
+        Stack<Node> nodepath = new Stack<>();
+        Stack<Edge> edgepath = new Stack<>();
         nodepath.push(start);
         Node currentnode = start;
         if (currentnode.getConnections().isEmpty())
             return null;
         for (Edge conn : currentnode.getConnections()) {
-            djikstra(distance + conn.getWeight(), conn.getDestination(), (Stack<Node>) nodepath.clone(), target, finallist);
+            edgepath.push(conn);
+            djikstra(0 + conn.getWeight(), conn.getDestination(), (Stack<Node>) nodepath.clone(), (Stack<Edge>) edgepath.clone(), target, finallist);
+            edgepath.pop();
         }
         if (finallist.isEmpty()) {
             return null;
         } else {
-            finallist.sort(Comparator.comparingInt(pair -> pair.getKey()));
+            finallist.sort(Comparator.comparingInt(pair -> pair.distance));
         }
-        return finallist.get(0).getValue();
+        return finallist.get(0).path;
 
         /*
         while(true)
@@ -188,10 +199,10 @@ public class ListGraph {
 
     }
 
-    public void djikstra(int currentDistance, Node currentnode, Stack<Node> nodepath, Node target, ArrayList<Pair<Integer, ArrayList<Node>>> finallist) {
+    private void djikstra(int currentDistance, Node currentnode, Stack<Node> nodepath, Stack<Edge> edgepath, Node target, ArrayList<PathResult> finallist) {
         nodepath.push(currentnode);
         if (currentnode.equals(target)) {
-            finallist.add(new Pair<>(currentDistance, (ArrayList<Node>) nodepath.stream().toList()));
+            finallist.add(new PathResult(currentDistance, (ArrayList<Edge>) edgepath.stream().toList()));
             return;
         }
 
@@ -203,8 +214,9 @@ public class ListGraph {
             return;
         }
         for (Edge conn : targets) {
-            djikstra(currentDistance + conn.getWeight(), conn.getDestination(), (Stack<Node>) nodepath.clone(), target, finallist);
-
+            edgepath.push(conn);
+            djikstra(currentDistance + conn.getWeight(), conn.getDestination(), (Stack<Node>) nodepath.clone(), (Stack<Edge>) edgepath.clone(), target, finallist);
+            edgepath.pop();
         }
 
     }

@@ -1,5 +1,6 @@
 package com.gouswin;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,11 +22,16 @@ import javafx.stage.Stage;
 
 public class StartController {
 
+
+    private Circle[] circlesSelected = new Circle[2]; // store selected circles (highlighted in red in the UI);
+
+
+
     private static final String MAP_FILE = "europa.gif";
 
     private boolean unsavedChanges = false;
     private ListGraph listGraph = null;
-    private HashMap<Node, Circle> drawnNodes = new HashMap<>();
+    private HashMap<Circle, Node> drawnNodes = new HashMap<>();
 
     @FXML
     private ImageView map;
@@ -51,6 +57,43 @@ public class StartController {
     private Button newPlace;
 
 
+    private boolean selectCircle(Circle circle)
+    {
+        if(circlesSelected[0] == null)
+        {
+            circlesSelected[0] = circle;
+            return true;
+        }
+        else if(circlesSelected[1] == null)
+        {
+            circlesSelected[1] = circle;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    }
+    private boolean unselectCircle(Circle circle)
+    {
+        if(circlesSelected[0] == circle)
+        {
+            circlesSelected[0] = circlesSelected[1];
+            circlesSelected[1] = null;
+            return true;
+
+        }
+        else if(circlesSelected[1] == circle)
+        {
+            circlesSelected[1] = null;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
     private void drawMap() {
         // Delete all drawn nodes
         drawnNodes.clear();
@@ -58,8 +101,24 @@ public class StartController {
             Circle circle = new Circle(node.getCoordinate().getX(), node.getCoordinate().getY(), 10);
             // change color of circle to a random color
             circle.setCursor(Cursor.HAND);
-            circle.setFill(javafx.scene.paint.Color.RED);
-            drawnNodes.put(node, circle);
+            circle.setFill(javafx.scene.paint.Color.BLUE);
+            circle.onMouseClickedProperty().set(e -> {
+                if (e.isPrimaryButtonDown())
+                {
+                    Circle clickedCircle = (Circle)e.getTarget();
+                    if(clickedCircle.getFill() == javafx.scene.paint.Color.BLUE)
+                    {
+                        boolean res = selectCircle(clickedCircle);
+                        clickedCircle.setFill(javafx.scene.paint.Color.RED);
+                    }
+                    else
+                    {
+                        boolean res = unselectCircle(clickedCircle);
+                        clickedCircle.setFill(javafx.scene.paint.Color.BLUE);
+                    }
+                }
+            });
+            drawnNodes.put(circle, node);
             mapPane.getChildren().add(circle);
         }
 
@@ -98,6 +157,57 @@ public class StartController {
         this.listGraph = new ListGraph();
     }
 
+    @FXML
+    private void findPathAction() {
+        if(circlesSelected[1] == null) // if one or less circles are selected, then prompt the user to select two circles
+        {
+            Alert alert = new Alert(AlertType.ERROR, "Please select two places", ButtonType.OK);
+            alert.setTitle("Error!");
+            alert.setHeaderText("");
+            alert.initOwner(map.getScene().getWindow());
+            alert.showAndWait();
+            return;
+        }
+        Node start = drawnNodes.get(circlesSelected[0]);
+        Node end = drawnNodes.get(circlesSelected[1]);
+        ArrayList<Edge> path = listGraph.getPath(start, end);
+        if (path == null) {
+            Alert alert = new Alert(AlertType.ERROR, "No path found", ButtonType.OK);
+            alert.setTitle("Error!");
+            alert.setHeaderText("");
+            alert.initOwner(map.getScene().getWindow());
+            alert.showAndWait();
+        } else {
+            Alert alert = new Alert(AlertType.INFORMATION, "Path found", ButtonType.OK);
+            alert.setTitle("%s to %s".formatted(start.getName(), end.getName()));
+            alert.setHeaderText("");
+            alert.initOwner(map.getScene().getWindow());
+            String trajectory = "";
+            int total = 0;
+            for(Edge edge : path)
+            {
+                total += edge.getWeight();
+                trajectory += " to %s by %s takes %i \n".formatted(edge.getDestination().getName(), edge.getTravelType(), edge.getWeight());
+
+            }
+            trajectory += "Total %i".formatted(total);
+            alert.setContentText(trajectory);
+        }
+
+
+    }
+
+    @FXML
+    private void newConnectionAction()
+    {
+        //TODO
+    }
+
+    @FXML
+    private void changeConnectionAction()
+    {
+        //TODO
+    }
 
     @FXML
     private void openMapAction() {
