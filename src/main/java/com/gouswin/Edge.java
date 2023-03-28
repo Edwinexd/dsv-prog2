@@ -2,17 +2,29 @@ package com.gouswin;
 
 public class Edge {
 
+    int weight;
+
     String name;
     Node origin;
     Node destination;
-    double weight;
+
+   public Edge(String name, Node origin, Node destination, int weight) {
+        this.name = name;
+        this.origin = origin;
+        this.destination = destination;
+        this.weight = weight;
+    }
 
     public Node getDestination() {
         return destination;
     }
 
-    public double getWeight() {
+    public int getWeight() {
         return weight;
+    }
+
+    public void setWeight(int newWeight) {
+        weight = newWeight;
     }
 
     public String getName() {
