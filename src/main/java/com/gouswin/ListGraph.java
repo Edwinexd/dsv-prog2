@@ -3,6 +3,7 @@ package com.gouswin;
 import javafx.util.Pair;
 
 import java.lang.reflect.Array;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,8 +25,17 @@ public class ListGraph {
 
     }
 
+    public Node findNode(String name) {
+        for (Node node : nodes) {
+            if (node.getName().equals(name)) {
+                return node;
+            }
+        }
+        return null;
+    }
 
-    public void connect(Node from, Node to, int weight, String name, String travelType) throws IllegalArgumentException, IllegalStateException, NoSuchElementException {
+
+    public void connect(Node from, Node to, int weight, String travelType) throws IllegalArgumentException, IllegalStateException, NoSuchElementException {
         if (from.equals(to)) {
             throw new IllegalArgumentException("Cannot connect a node to itself");
         }
@@ -38,7 +48,7 @@ public class ListGraph {
         if (from.hasConnection(to)) {
             throw new IllegalStateException("Nodes are already connected");
         }
-        from.addConnection(new Edge(name, from, to, weight, travelType));
+        from.addConnection(new Edge(from, to, weight, travelType));
 
 
     }
@@ -209,6 +219,37 @@ public class ListGraph {
 
     }
 
+    public String seraliaze() {
+        StringBuilder res = new StringBuilder();
+        res.append(nodes.stream().map(node -> "%s;%f;%f".formatted(node.getName(), node.getCoordinate().getX(), node.getCoordinate().getY())).collect(Collectors.joining(";")));
+        res.append("\n");
+        for (Node node: nodes) {
+            for (Edge edge: node.getConnections()) {
+                res.append("%s;%s;%s;%d\n".formatted(node.getName(), edge.getDestination().getName(), edge.getTravelType(), edge.getWeight()));
+            }
+        }
+        return res.toString();
+    }
+
+    public static ListGraph desterialise(String input) {
+        ListGraph res = new ListGraph();
+        String[] lines = input.split("\n");
+        String[] nodes = lines[1].split(";");
+
+        for (int i = 0; i < nodes.length; i+=3) {
+            // TODO Dont use replace
+            res.add(new Node(nodes[i], new Coordinate(Double.parseDouble(nodes[i+1].replace(",", ".")), Double.parseDouble(nodes[i+2].replace(",", ".")))));
+        }
+        for (int i = 2; i < lines.length; i++) {
+            String[] edgeData = lines[i].split(";");
+            Node from = res.findNode(edgeData[0]);
+            Node to = res.findNode(edgeData[1]);
+            res.connect(from, to, Integer.parseInt(edgeData[3]), edgeData[2]);
+        }
+        return res;
+
+
+    }
 
 }
 

@@ -8,10 +8,9 @@ public class Edge {
     private final Node origin;
     private final Node destination;
 
-    private final String travelType;
+    private String travelType;
 
-    public Edge(String name, Node origin, Node destination, int weight, String travelType) {
-        this.name = name;
+    public Edge(Node origin, Node destination, int weight, String travelType) {
         this.origin = origin;
         this.destination = destination;
         this.weight = weight;
@@ -32,6 +31,10 @@ public class Edge {
 
     public String getTravelType() {
         return travelType;
+    }
+
+    public void setTravelType(String newTravelType) {
+        this.travelType = newTravelType;
     }
 
     public String getName() {

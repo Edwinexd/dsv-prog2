@@ -1,5 +1,12 @@
 package com.gouswin;
 
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,8 +39,6 @@ public class StartController {
     @FXML
     private Pane mapPane;
 
-
-
     // Menu items
     @FXML
     private MenuItem newMap;
@@ -50,7 +55,6 @@ public class StartController {
     @FXML
     private Button newPlace;
 
-
     private void drawMap() {
         // Delete all drawn nodes
         drawnNodes.clear();
@@ -66,7 +70,8 @@ public class StartController {
     }
 
     private boolean discardChanges() {
-        Alert alert = new Alert(AlertType.CONFIRMATION, "Unsaved changes, continue anyway?", ButtonType.OK, ButtonType.CANCEL);
+        Alert alert = new Alert(AlertType.CONFIRMATION, "Unsaved changes, continue anyway?", ButtonType.OK,
+                ButtonType.CANCEL);
         alert.setTitle("Warning!");
         alert.setHeaderText("");
         alert.initOwner(map.getScene().getWindow());
@@ -80,14 +85,19 @@ public class StartController {
         if (unsavedChanges && !discardChanges()) {
             return;
         }
+        setImage();
+        this.listGraph = new ListGraph();
+    }
+
+    private void setImage() {
         Image image = new Image(MAP_FILE);
 
         Stage stage = (Stage) newMap.getParentPopup().getOwnerWindow();
-        
+
         stage.setHeight(stage.getHeight() + image.getHeight());
         map.setFitHeight(image.getHeight());
         mapPane.setPrefHeight(image.getHeight());
-        
+
         if (stage.getWidth() < image.getWidth()) {
             stage.setWidth(image.getWidth());
             map.setFitWidth(image.getWidth());
@@ -95,21 +105,28 @@ public class StartController {
         }
 
         map.setImage(image);
-        this.listGraph = new ListGraph();
     }
 
-
     @FXML
-    private void openMapAction() {
+    private void openMapAction() throws IOException {
         if (unsavedChanges && !discardChanges()) {
             return;
         }
-        // TODO open map
+        String lines = String.join("\n", Files.readAllLines(Paths.get("europa.graph"), StandardCharsets.UTF_8));
+        listGraph = ListGraph.desterialise(lines);
+        setImage();
+        drawMap();
     }
 
     @FXML
-    private void saveMapAction() {
-        // TODO save map
+    private void saveMapAction() throws IOException {
+        String output = "file:%s\n".formatted(MAP_FILE) + listGraph.seraliaze();
+        System.out.println(output);
+        try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream("europa.graph"),
+                StandardCharsets.UTF_8)) {
+            writer.write(output);
+        }
+
     }
 
     @FXML
@@ -143,7 +160,6 @@ public class StartController {
 
             listGraph.add(new Node(dialog.getResult(), coordinate));
             unsavedChanges = true;
-            // TODO Redraw map nodes
             drawMap();
         });
     }
