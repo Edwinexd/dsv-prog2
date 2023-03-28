@@ -40,11 +40,6 @@ public class Edge {
 
     @Override
     public String toString() {
-        return "Edge{" +
-                "name='" + name + '\'' +
-                ", origin=" + origin +
-                ", destination=" + destination +
-                ", weight=" + weight +
-                '}';
+        return "%s to %s;\n".formatted(travelType, destination.getName());
     }
 }

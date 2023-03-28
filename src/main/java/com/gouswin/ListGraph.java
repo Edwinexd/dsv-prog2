@@ -91,21 +91,26 @@ public class ListGraph {
 
         return res.isEmpty() ? null : res;
     }
+    @Override
+    public String toString() {
+        String res = "";
+        for (Node node : nodes) {
+            res += node.getName() + ":\n";
+            for (Edge edge : node.getConnections()) {
+                res += "\t" + edge.toString() + "\n";
+            }
+        }
+        return res;
+    }
+
 
     public boolean pathExists(Node from, Node to) throws NoSuchElementException {
         if (!nodes.contains(from) || !nodes.contains(to)) {
             throw new NoSuchElementException("One or more nodes not found");
         }
-        return from.hasConnection(to);
+        return !runDjikstra(from,to).isEmpty();
 
     }
-
-
-    public String toString() {
-        return "";
-    }
-
-
     public ArrayList<Node> getPath(Node from, Node to) throws NoSuchElementException {
 
         if (!nodes.contains(from) || !nodes.contains(to)) {
