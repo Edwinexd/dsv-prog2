@@ -10,7 +10,7 @@ public class Edge {
 
     private final String travelType;
 
-   public Edge(String name, Node origin, Node destination, int weight, String travelType) {
+    public Edge(String name, Node origin, Node destination, int weight, String travelType) {
         this.name = name;
         this.origin = origin;
         this.destination = destination;

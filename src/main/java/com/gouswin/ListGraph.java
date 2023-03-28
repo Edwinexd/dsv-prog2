@@ -91,6 +91,7 @@ public class ListGraph {
 
         return res.isEmpty() ? null : res;
     }
+
     @Override
     public String toString() {
         String res = "";
@@ -108,9 +109,10 @@ public class ListGraph {
         if (!nodes.contains(from) || !nodes.contains(to)) {
             throw new NoSuchElementException("One or more nodes not found");
         }
-        return !runDjikstra(from,to).isEmpty();
+        return !runDjikstra(from, to).isEmpty();
 
     }
+
     public ArrayList<Node> getPath(Node from, Node to) throws NoSuchElementException {
 
         if (!nodes.contains(from) || !nodes.contains(to)) {
