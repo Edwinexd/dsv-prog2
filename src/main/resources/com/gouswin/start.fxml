@@ -7,12 +7,13 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="79.0" prefWidth="579.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gouswin.StartController">
    <children>
       <ButtonBar buttonMinWidth="0.0" layoutX="2.0" layoutY="27.0" prefHeight="40.0" prefWidth="564.0">
-        <buttons>
+         <buttons>
             <Button layoutX="512.0" layoutY="17.0" minWidth="158.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="158.0" text="Find Path">
                <font>
                   <Font size="10.0" />
@@ -21,20 +22,24 @@
             <Button layoutX="512.0" layoutY="17.0" minWidth="158.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="158.0" text="Show Connection">
                <font>
                   <Font size="10.0" />
-               </font></Button>
-            <Button layoutX="512.0" layoutY="17.0" minWidth="158.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="158.0" text="New Place">
+               </font>
+            </Button>
+            <Button fx:id="newPlace" layoutX="512.0" layoutY="17.0" minWidth="158.0" mnemonicParsing="false" onAction="#newPlaceAction" prefHeight="26.0" prefWidth="158.0" text="New Place">
                <font>
                   <Font size="10.0" />
-               </font></Button>
-          <Button minWidth="158.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="158.0" text="New Connection">
+               </font>
+            </Button>
+            <Button minWidth="158.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="158.0" text="New Connection">
                <font>
                   <Font size="10.0" />
-               </font></Button>
+               </font>
+            </Button>
             <Button layoutX="512.0" layoutY="17.0" minWidth="158.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="158.0" text="Change Connection">
                <font>
                   <Font size="10.0" />
-               </font></Button>
-        </buttons>
+               </font>
+            </Button>
+         </buttons>
       </ButtonBar>
       <MenuBar layoutY="1.0" prefHeight="26.0" prefWidth="577.0">
          <menus>
@@ -49,6 +54,10 @@
             </Menu>
          </menus>
       </MenuBar>
-      <ImageView fx:id="map" fitWidth="579.0" layoutY="79.0" pickOnBounds="true" preserveRatio="true" />
+      <Pane fx:id="mapPane" layoutY="86.0" prefHeight="0.0" prefWidth="579.0">
+         <children>
+             <ImageView fx:id="map" fitWidth="579.0" pickOnBounds="true" preserveRatio="true" />
+         </children>
+      </Pane>
    </children>
 </AnchorPane>
