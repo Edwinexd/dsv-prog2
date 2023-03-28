@@ -67,7 +67,7 @@ public class ListGraph {
     }
 
     public HashSet<Node> getNodes() {
-        return nodes;
+        return (HashSet<Node>) nodes.clone();
     }
 
     public HashSet<Edge> getEdgesfrom(Node node) throws NoSuchElementException {
