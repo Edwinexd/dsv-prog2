@@ -1,12 +1,14 @@
 package com.gouswin;
 
+import javafx.util.Pair;
+
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class ListGraph {
 
-    private HashSet<Node> nodes;
+    private HashSet<Node> nodes = new HashSet<>();
 
     public boolean add(Node node) {
         return nodes.add(node);
@@ -23,7 +25,7 @@ public class ListGraph {
     }
 
 
-    public void connect(Node from, Node to, int weight, String name) throws IllegalArgumentException, IllegalStateException, NoSuchElementException {
+    public void connect(Node from, Node to, int weight, String name, String travelType) throws IllegalArgumentException, IllegalStateException, NoSuchElementException {
         if (from.equals(to)) {
             throw new IllegalArgumentException("Cannot connect a node to itself");
         }
@@ -36,7 +38,7 @@ public class ListGraph {
         if (from.hasConnection(to)) {
             throw new IllegalStateException("Nodes are already connected");
         }
-        from.addConnection(new Edge(name, from, to, weight));
+        from.addConnection(new Edge(name, from, to, weight, travelType));
 
 
     }
@@ -67,72 +69,142 @@ public class ListGraph {
     }
 
     public HashSet<Node> getNodes() {
-        return nodes;
+        return (HashSet<Node>) nodes.clone();
     }
 
     public HashSet<Edge> getEdgesfrom(Node node) throws NoSuchElementException {
-        if(!nodes.contains(node)){
+        if (!nodes.contains(node)) {
             throw new NoSuchElementException("Node not found");
         }
         return node.getConnections();
     }
 
     public HashSet<Edge> getEdgesBetween(Node from, Node to) throws NoSuchElementException {
-        if(!nodes.contains(from) || !nodes.contains(to)){
+        if (!nodes.contains(from) || !nodes.contains(to)) {
             throw new NoSuchElementException("One or more nodes not found");
         }
         HashSet<Edge> res = (HashSet<Edge>) from.getConnections().stream().filter(
-                edge -> edge
-                        .getDestination()
-                        .equals(to))
+                        edge -> edge
+                                .getDestination()
+                                .equals(to))
                 .collect(Collectors.toSet());
 
         return res.isEmpty() ? null : res;
     }
 
-    public boolean pathExists(Node from, Node to) throws NoSuchElementException {
-        if(!nodes.contains(from) || !nodes.contains(to)){
-            throw new NoSuchElementException("One or more nodes not found");
-        }
-        return from.hasConnection(to);
-
-    }
-
-
+    @Override
     public String toString() {
-        return "";
+        String res = "";
+        for (Node node : nodes) {
+            res += node.getName() + ":\n";
+            for (Edge edge : node.getConnections()) {
+                res += "\t" + edge.toString() + "\n";
+            }
+        }
+        return res;
     }
 
 
-    public ArrayList<Edge> getPath(Node from, Node to) throws NoSuchElementException {
+    public boolean pathExists(Node from, Node to) throws NoSuchElementException {
+        if (!nodes.contains(from) || !nodes.contains(to)) {
+            throw new NoSuchElementException("One or more nodes not found");
+        }
+        return !runDjikstra(from, to).isEmpty();
 
-        if(!nodes.contains(from) || !nodes.contains(to)){
+    }
+
+    public ArrayList<Node> getPath(Node from, Node to) throws NoSuchElementException {
+
+        if (!nodes.contains(from) || !nodes.contains(to)) {
             throw new NoSuchElementException("One or more nodes not found");
         }
 
-        runDjikstra(from, to);
-        return null;
+        ArrayList<Node> res = runDjikstra(from, to);
+        return res;
 
     }
 
-    public ArrayList<Node> runDjikstra(Node start, Node target){
-        HashSet visitednodes = new HashSet<Node>();
+    public ArrayList<Node> runDjikstra(Node start, Node target) {
+        ArrayList<Pair<Integer, ArrayList<Node>>> finallist = new ArrayList<>();
         Stack<Node> nodepath = new Stack<Node>();
+        HashSet visitednodes = new HashSet<Node>();
         HashSet<Node> unvisitednodes = (HashSet<Node>) nodes.clone();
         int distance = 0;
         nodepath.push(start);
         Node currentnode = start;
+        if (currentnode.getConnections().isEmpty())
+            return null;
+        for (Edge conn : currentnode.getConnections()) {
+            djikstra(distance + conn.getWeight(), conn.getDestination(), (Stack<Node>) nodepath.clone(), target, finallist);
+        }
+        if (finallist.isEmpty()) {
+            return null;
+        } else {
+            finallist.sort(Comparator.comparingInt(pair -> pair.getKey()));
+        }
+        return finallist.get(0).getValue();
+
+        /*
         while(true)
         {
-           HashSet<Edge> targetsSet = currentnode.getConnections();
-           ArrayList<Edge> targets = (ArrayList<Edge>) targetsSet.stream()
-                   .filter(edge -> !visitednodes.contains(edge.getDestination()))
-                   .collect(Collectors.toList());
-           targets.sort(Comparator.comparingInt(edge -> edge.getWeight()));
-           if(targets.isEmpty())
-           {
+            visitednodes.add(currentnode);
+            unvisitednodes.remove(currentnode);
+            HashSet<Edge> targetsSet = currentnode.getConnections();
+            ArrayList<Edge> targets = (ArrayList<Edge>) targetsSet.stream()
+                    .filter(edge -> !visitednodes.contains(edge.getDestination()))
+                    .collect(Collectors.toList());
+            targets.sort(Comparator.comparingInt(edge -> edge.getWeight()));
+            if(targets.isEmpty())
+            {
+                Node popped = nodepath.pop();
+                visitednodes.add(currentnode);
+                unvisitednodes.remove(currentnode);
+                distance -= popped.getConnection(currentnode).getWeight();
+
+                if (nodepath.isEmpty())
+                    return null;
+                if(nodepath.peek().equals(start))
+                {
+                    visitednodes.clear();
+                    visitednodes.add(popped);
+                    unvisitednodes = (HashSet<Node>) nodes.clone();
+
+                }
+                currentnode = nodepath.peek();
+            }
+            else
+            {
+                currentnode = targets.get(0).getDestination(); // zeroth index contains the
+                nodepath.push(currentnode);
+                distance += targets.get(0).getWeight();
+                if(currentnode.equals(target))
+                {
+                     return (ArrayList<Node>) nodepath.stream().collect(Collectors.toList());
+                }
 
            }
+        }
+         */
+
+    }
+
+    public void djikstra(int currentDistance, Node currentnode, Stack<Node> nodepath, Node target, ArrayList<Pair<Integer, ArrayList<Node>>> finallist) {
+        nodepath.push(currentnode);
+        if (currentnode.equals(target)) {
+            finallist.add(new Pair<>(currentDistance, (ArrayList<Node>) nodepath.stream().toList()));
+            return;
+        }
+
+        HashSet<Edge> targetsSet = currentnode.getConnections();
+        ArrayList<Edge> targets = (ArrayList<Edge>) targetsSet.stream()
+                .filter(edge -> !nodepath.contains(edge.getDestination()))
+                .collect(Collectors.toList());
+        if (targets.isEmpty()) {
+            return;
+        }
+        for (Edge conn : targets) {
+            djikstra(currentDistance + conn.getWeight(), conn.getDestination(), (Stack<Node>) nodepath.clone(), target, finallist);
+
         }
 
     }
