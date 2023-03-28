@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 public class ListGraph {
 
-    HashSet<Node> nodes;
+    private HashSet<Node> nodes;
 
     public boolean add(Node node) {
         return nodes.add(node);
