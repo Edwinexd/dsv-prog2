@@ -93,6 +93,14 @@ public class ListGraph {
         return (HashSet<Node>) nodes.clone();
     }
 
+    public HashSet<Edge> getEdges() {
+        HashSet<Edge> res = new HashSet<>();
+        for (Node node : nodes) {
+            res.addAll(node.getConnections());
+        }
+        return res;
+    }
+
     public HashSet<Edge> getEdgesfrom(Node node) throws NoSuchElementException {
         if (!nodes.contains(node)) {
             throw new NoSuchElementException("Node not found");

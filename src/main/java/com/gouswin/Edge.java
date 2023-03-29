@@ -4,7 +4,6 @@ public class Edge {
 
     private int weight;
 
-    private final String name;
     private final Node origin;
     private final Node destination;
 
@@ -19,6 +18,10 @@ public class Edge {
 
     public Node getDestination() {
         return destination;
+    }
+
+    public Node getOrigin() {
+        return origin;
     }
 
     public int getWeight() {
