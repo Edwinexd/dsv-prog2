@@ -1,6 +1,7 @@
 package com.gouswin;
 
 import java.util.ArrayList;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.util.Set;
 
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -24,6 +26,7 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -302,12 +305,14 @@ public class StartController {
                 StandardCharsets.UTF_8)) {
             writer.write(output);
         }
+        unsavedChanges = false;
 
     }
 
     @FXML
     private void saveImageAction() {
-        // TODO save image of map
+        // Take a screenshot of the window
+        // WritableImage image = mapPane.snapshot(new SnapshotParameters(), null);
     }
 
     @FXML
