@@ -6,7 +6,7 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-class PathResult
+class PathResult<T>
 {
     public int distance;
     public ArrayList<Edge<T>> path;
@@ -141,13 +141,13 @@ public class ListGraph<T> { // DAMN YOU GENERICS
             throw new NoSuchElementException("One or more nodes not found");
         }
 
-        ArrayList<Edge<T>> res = runDjikstra(from, to);
+        ArrayList<Edge<T>> res = runDepthSearch(from, to);
         return res;
 
     }
 
-    private ArrayList<Edge<T>> runDjikstra(T start, T target) {
-        ArrayList<PathResult> finallist = new ArrayList<>();
+    private ArrayList<Edge<T>> runDepthSearch(T start, T target) {
+        ArrayList<PathResult<T>> finallist = new ArrayList<>();
         Stack<T> nodepath = new Stack<>();
         Stack<Edge<T>> edgepath = new Stack<>();
         nodepath.push(start);
@@ -156,7 +156,7 @@ public class ListGraph<T> { // DAMN YOU GENERICS
             return null;
         for (Edge conn : currentnode.getConnections()) {
             edgepath.push(conn);
-            djikstra(0 + conn.getWeight(), conn.getDestination(), (Stack<T>) nodepath.clone(), (Stack<Edge<T>>) edgepath.clone(), target, finallist);
+            depthSearch(0 + conn.getWeight(), conn.getDestination(), (Stack<T>) nodepath.clone(), (Stack<Edge<T>>) edgepath.clone(), target, finallist);
             edgepath.pop();
         }
         if (finallist.isEmpty()) {
@@ -210,7 +210,7 @@ public class ListGraph<T> { // DAMN YOU GENERICS
 
     }
 
-    private void djikstra(int currentDistance, T currentnode, Stack<T> nodepath, Stack<Edge<T>> edgepath, T target, ArrayList<PathResult> finallist) {
+    private void depthSearch(int currentDistance, T currentnode, Stack<T> nodepath, Stack<Edge<T>> edgepath, T target, ArrayList<PathResult> finallist) {
         nodepath.push(currentnode);
         if (currentnode.equals(target)) {
             finallist.add(new PathResult(currentDistance, (ArrayList<Edge<T>>) edgepath.stream().toList()));
@@ -226,7 +226,7 @@ public class ListGraph<T> { // DAMN YOU GENERICS
         }
         for (Edge<T> conn : targets) {
             edgepath.push(conn);
-            djikstra(currentDistance + conn.getWeight(), conn.getDestination(), (Stack<T>) nodepath.clone(), (Stack<Edge<T>>) edgepath.clone(), target, finallist);
+            depthSearch(currentDistance + conn.getWeight(), conn.getDestination(), (Stack<T>) nodepath.clone(), (Stack<Edge<T>>) edgepath.clone(), target, finallist);
             edgepath.pop();
         }
 
