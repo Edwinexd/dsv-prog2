@@ -102,7 +102,7 @@ public class StartController {
     private void drawMap() {
         // Delete all drawn nodes
         drawnNodes.clear();
-        for (Node node : listGraph.getNodes()) {
+        for (Node node : (HashSet<Node>) listGraph.getNodes()) {
             Circle circle = new Circle(node.getCoordinate().getX(), node.getCoordinate().getY(), 10);
             // change color of circle to a random color
             circle.setCursor(Cursor.HAND);
@@ -197,7 +197,7 @@ public class StartController {
             for(Edge edge : path)
             {
                 total += edge.getWeight();
-                trajectory += " to %s by %s takes %i \n".formatted(edge.getDestination().getName(), edge.getTravelType(), edge.getWeight());
+                trajectory += " to %s by %s takes %i \n".formatted(edge.getDestination().toString(), edge.getTravelType(), edge.getWeight());
 
             }
             trajectory += "Total %i".formatted(total);
