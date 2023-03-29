@@ -1,23 +1,23 @@
 package com.gouswin;
 
-public class Edge {
+public class Edge<T> {
 
     private int weight;
 
     private final String name;
-    private final Node origin;
-    private final Node destination;
+    private final T origin;
+    private final T destination;
 
     private String travelType;
 
-    public Edge(Node origin, Node destination, int weight, String travelType) {
+    public Edge(T origin, T destination, int weight, String travelType) {
         this.origin = origin;
         this.destination = destination;
         this.weight = weight;
         this.travelType = travelType;
     }
 
-    public Node getDestination() {
+    public T getDestination() {
         return destination;
     }
 
@@ -43,6 +43,6 @@ public class Edge {
 
     @Override
     public String toString() {
-        return "%s to %s;\n".formatted(travelType, destination.getName());
+        return "%s to %s;\n".formatted(travelType, destination.toString());
     }
 }
