@@ -22,6 +22,10 @@ public class Edge<T> {
         return destination;
     }
 
+    public Node getOrigin() {
+        return origin;
+    }
+
     public int getWeight() {
         return weight;
     }
