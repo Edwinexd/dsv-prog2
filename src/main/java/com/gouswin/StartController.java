@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
@@ -292,19 +293,55 @@ public class StartController {
             return;
         }
         String lines = String.join("\n", Files.readAllLines(Paths.get("europa.graph"), StandardCharsets.UTF_8));
-        listGraph = desterialise(lines); // TODO: Reimplement this here
+        listGraph = deserialize(lines); // TODO: Reimplement this here
         setImage();
         drawMap();
     }
 
+    private ListGraph<Node> deserialize(String input) {
+
+        ListGraph<Node> res = new ListGraph();
+        String[] lines = input.split("\n");
+        String[] nodes = lines[1].split(";");
+
+        for (int i = 0; i < nodes.length; i+=3) {
+            // TODO Dont use replace
+            res.add(new Node(nodes[i], new Coordinate(Double.parseDouble(nodes[i+1].replace(",", ".")), Double.parseDouble(nodes[i+2].replace(",", ".")))));
+        }
+        for (int i = 2; i < lines.length; i++) {
+            HashSet<Node> nodeset = res.getNodes();
+            String[] edgeData = lines[i].split(";");
+            Node from = res.findNode(edgeData[0]);
+            Node to = res.findNode(edgeData[1]);
+            res.connect("Insert Name Here" ,from, to, Integer.parseInt(edgeData[3]), edgeData[2]);
+        }
+        return res;
+    }
+
     @FXML
     private void saveMapAction() throws IOException {
-        String output = "file:%s\n".formatted(MAP_FILE) + seraliaze(); // TODO: Reimplement this here
+        String output = "file:%s\n".formatted(MAP_FILE) + serialize(); // TODO: Reimplement this here
         try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream("europa.graph"),
                 StandardCharsets.UTF_8)) {
             writer.write(output);
         }
 
+    }
+
+    private String serialize() {
+
+        StringBuilder res = new StringBuilder();
+
+        HashMap<Node, HashSet<Edge<Node>>> nodes = listGraph.getNodeGraph();
+
+        res.append(nodes.keySet().stream().map(node -> "%s;%f;%f".formatted(node.getName(), node.getCoordinate().getX(), node.getCoordinate().getY())).collect(Collectors.joining(";")));
+        res.append("\n");
+        for (HashSet<Edge<Node>> edges : nodes.values()) {
+            for (Edge<Node> edge: edges) {
+                res.append("%s;%s;%s;%d\n".formatted(node.getName(), edge.getDestination().getName(), edge.getTravelType(), edge.getWeight()));
+            }
+        }
+        return res.toString();
     }
 
     @FXML

@@ -22,7 +22,7 @@ public class Edge<T> {
         return destination;
     }
 
-    public Node getOrigin() {
+    public T getOrigin() {
         return origin;
     }
 
