@@ -4,26 +4,18 @@ public class Edge<T> {
 
     private int weight;
 
-    private final String name;
-    private final T origin;
     private final T destination;
 
-    private String travelType;
+    private String name;
 
-    public Edge(String name, T origin, T destination, int weight, String travelType) {
-        this.name = name;
-        this.origin = origin;
+    public Edge(T destination, int weight, String name) {
         this.destination = destination;
         this.weight = weight;
-        this.travelType = travelType;
+        this.name = name;
     }
 
     public T getDestination() {
         return destination;
-    }
-
-    public T getOrigin() {
-        return origin;
     }
 
     public int getWeight() {
@@ -34,20 +26,16 @@ public class Edge<T> {
         weight = newWeight;
     }
 
-    public String getTravelType() {
-        return travelType;
-    }
-
-    public void setTravelType(String newTravelType) {
-        this.travelType = newTravelType;
-    }
-
     public String getName() {
         return name;
     }
 
+    public void setName(String newName) {
+        this.name = newName;
+    }
+
     @Override
     public String toString() {
-        return "%s to %s;\n".formatted(travelType, destination.toString());
+        return "%s to %s;\n".formatted(name, destination.toString());
     }
 }

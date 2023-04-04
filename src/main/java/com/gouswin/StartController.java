@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import javafx.fxml.FXML;
@@ -36,6 +37,10 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 
+class NodeEdge {
+    
+}
+
 public class StartController {
 
     private Circle[] circlesSelected = new Circle[2]; // store selected circles (highlighted in red in the UI);
@@ -45,7 +50,7 @@ public class StartController {
     private boolean unsavedChanges = false;
     private ListGraph<Node> listGraph = null;
     private HashMap<Circle, Node> drawnNodes = new HashMap<>();
-    private HashMap<Line, Edge> drawnEdges = new HashMap<>();
+    private HashMap<Line, Edge<Node>> drawnEdges = new HashMap<>();
 
     @FXML
     private ImageView map;
@@ -122,7 +127,7 @@ public class StartController {
         }
     }
 
-    private void drawEdge(Edge<Node> e) {
+    private void drawEdge(Node n, Edge<Node> e) {
         Line line = new Line(e.getOrigin().getCoordinate().getX(), e.getOrigin().getCoordinate().getY(),
                 e.getDestination().getCoordinate().getX(), e.getDestination().getCoordinate().getY());
         line.setStrokeWidth(2);
@@ -132,8 +137,8 @@ public class StartController {
     }
 
     private void drawEdges() {
-        Set<Edge<Node>> targetEdges = listGraph.getEdges();
-        targetEdges.removeIf(edge -> drawnEdges.values().contains(edge));
+        HashMap<Node, HashSet<Edge<Node>>> targetEdges = listGraph.getNodeGraph().entrySet();
+        //targetEdges.removeIf(edge -> drawnEdges.values().contains(edge));
         for (Edge<Node> e : targetEdges) {
             System.out.println(e);
             drawEdge(e);
@@ -164,7 +169,7 @@ public class StartController {
             return;
         }
         setImage();
-        this.listGraph = new ListGraph();
+        this.listGraph = new ListGraph<>();
     }
 
     private void setImage() {
@@ -217,7 +222,7 @@ public class StartController {
             for (Edge<Node> edge : path) {
                 total += edge.getWeight();
                 trajectory += " to %s by %s takes %i \n".formatted(edge.getDestination().getName(),
-                        edge.getTravelType(), edge.getWeight());
+                        edge.getName(), edge.getWeight());
 
             }
             trajectory += "Total %i".formatted(total);
@@ -241,7 +246,7 @@ public class StartController {
         }
         Node one = drawnNodes.get(circlesSelected[0]);
         Node two = drawnNodes.get(circlesSelected[1]);
-        if (listGraph.getPath(one, two) != null) {
+        if (listGraph.hasConnection(one, two)) {
             Alert alert = new Alert(AlertType.ERROR, "Connection already exists", ButtonType.OK);
             alert.setTitle("Error!");
             alert.setHeaderText("");
@@ -277,9 +282,7 @@ public class StartController {
         System.out.println(weight);
 
 
-        // TODO Fix this funkyness
-        listGraph.connect("Insert Name here" ,one, two, weight, name);
-        listGraph.connect("Insert Name here" , two, one, weight, name);
+        listGraph.connect(one, two, weight, name);
         unsavedChanges = true;
         drawMap();
 
@@ -302,21 +305,25 @@ public class StartController {
     }
 
     private ListGraph<Node> deserialize(String input) {
-
-        ListGraph<Node> res = new ListGraph();
+        ListGraph<Node> res = new ListGraph<>();
         String[] lines = input.split("\n");
-        String[] nodes = lines[1].split(";");
-
-        for (int i = 0; i < nodes.length; i+=3) {
+        HashMap<String, Node> nameNode = new HashMap<>();
+        
+        String[] nodeTokens = lines[1].split(";");
+        for (int i = 0; i < nodeTokens.length; i+=3) {
             // TODO Dont use replace
-            res.add(new Node(nodes[i], new Coordinate(Double.parseDouble(nodes[i+1].replace(",", ".")), Double.parseDouble(nodes[i+2].replace(",", ".")))));
+            Node node = new Node(nodeTokens[i], new Coordinate(Double.parseDouble(nodeTokens[i+1].replace(",", ".")), Double.parseDouble(nodeTokens[i+2].replace(",", "."))));
+            nameNode.put(nodeTokens[i], node);
+            res.add(node);
         }
+        
         for (int i = 2; i < lines.length; i++) {
-            HashSet<Node> nodeset = res.getNodes();
             String[] edgeData = lines[i].split(";");
-            Node from = res.findNode(edgeData[0]);
-            Node to = res.findNode(edgeData[1]);
-            res.connect("Insert Name Here" ,from, to, Integer.parseInt(edgeData[3]), edgeData[2]);
+            
+            Node from = nameNode.get(edgeData[0]);
+            Node to = nameNode.get(edgeData[1]);
+            
+            res.connect(from, to, Integer.parseInt(edgeData[3]), edgeData[2]);
         }
         return res;
     }
@@ -340,9 +347,9 @@ public class StartController {
 
         res.append(nodes.keySet().stream().map(node -> "%s;%f;%f".formatted(node.getName(), node.getCoordinate().getX(), node.getCoordinate().getY())).collect(Collectors.joining(";")));
         res.append("\n");
-        for (HashSet<Edge<Node>> edges : nodes.values()) {
-            for (Edge<Node> edge: edges) {
-                res.append("%s;%s;%s;%d\n".formatted(node.getName(), edge.getDestination().getName(), edge.getTravelType(), edge.getWeight()));
+        for (Entry<Node, HashSet<Edge<Node>>> entry : nodes.entrySet()) {
+            for (Edge<Node> edge: entry.getValue()) {
+                res.append("%s;%s;%s;%d\n".formatted(entry.getKey().getName(), edge.getDestination().getName(), edge.getName(), edge.getWeight()));
             }
         }
         return res.toString();
