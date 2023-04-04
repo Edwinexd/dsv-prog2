@@ -39,7 +39,7 @@ public class StartController {
     private static final String MAP_FILE = "europa.gif";
 
     private boolean unsavedChanges = false;
-    private ListGraph listGraph = null;
+    private ListGraph<Node> listGraph = null;
     private HashMap<Circle, Node> drawnNodes = new HashMap<>();
     private HashMap<Line, Edge> drawnEdges = new HashMap<>();
 
@@ -118,7 +118,7 @@ public class StartController {
         }
     }
 
-    private void drawEdge(Edge e) {
+    private void drawEdge(Edge<Node> e) {
         Line line = new Line(e.getOrigin().getCoordinate().getX(), e.getOrigin().getCoordinate().getY(),
                 e.getDestination().getCoordinate().getX(), e.getDestination().getCoordinate().getY());
         line.setStrokeWidth(2);
@@ -128,13 +128,15 @@ public class StartController {
     }
 
     private void drawEdges() {
-        Set<Edge> targetEdges = listGraph.getEdges();
+        Set<Edge<Node>> targetEdges = listGraph.getEdges();
         targetEdges.removeIf(edge -> drawnEdges.values().contains(edge));
-        for (Edge e : targetEdges) {
+        for (Edge<Node> e : targetEdges) {
             System.out.println(e);
             drawEdge(e);
         }
     }
+
+
 
     private void drawMap() {
         drawNodes();
@@ -194,7 +196,7 @@ public class StartController {
         }
         Node start = drawnNodes.get(circlesSelected[0]);
         Node end = drawnNodes.get(circlesSelected[1]);
-        ArrayList<Edge> path = listGraph.getPath(start, end);
+        ArrayList<Edge<Node>> path = listGraph.getPath(start, end);
         if (path == null) {
             Alert alert = new Alert(AlertType.ERROR, "No path found", ButtonType.OK);
             alert.setTitle("Error!");
@@ -208,7 +210,7 @@ public class StartController {
             alert.initOwner(map.getScene().getWindow());
             String trajectory = "";
             int total = 0;
-            for (Edge edge : path) {
+            for (Edge<Node> edge : path) {
                 total += edge.getWeight();
                 trajectory += " to %s by %s takes %i \n".formatted(edge.getDestination().getName(),
                         edge.getTravelType(), edge.getWeight());
@@ -272,8 +274,8 @@ public class StartController {
 
 
         // TODO Fix this funkyness
-        listGraph.connect(one, two, weight, name);
-        listGraph.connect(two, one, weight, name);
+        listGraph.connect("Insert Name here" ,one, two, weight, name);
+        listGraph.connect("Insert Name here" , two, one, weight, name);
         unsavedChanges = true;
         drawMap();
 
@@ -290,14 +292,14 @@ public class StartController {
             return;
         }
         String lines = String.join("\n", Files.readAllLines(Paths.get("europa.graph"), StandardCharsets.UTF_8));
-        listGraph = ListGraph.desterialise(lines);
+        listGraph = desterialise(lines); // TODO: Reimplement this here
         setImage();
         drawMap();
     }
 
     @FXML
     private void saveMapAction() throws IOException {
-        String output = "file:%s\n".formatted(MAP_FILE) + listGraph.seraliaze();
+        String output = "file:%s\n".formatted(MAP_FILE) + seraliaze(); // TODO: Reimplement this here
         try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream("europa.graph"),
                 StandardCharsets.UTF_8)) {
             writer.write(output);

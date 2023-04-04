@@ -19,7 +19,14 @@ class PathResult<T>
 public class ListGraph<T> { // DAMN YOU GENERICS
 
     private HashSet<T> nodes = new HashSet<>();
+    private HashSet<Edge<T>> edgeset = new HashSet<>();
     private HashMap<T,HashSet<Edge<T>>> edges = new HashMap<>(); // T should always be hashable, but it might not be completely correct.
+
+
+    public Set<Edge<T>> getEdges()
+    {
+        return (HashSet<Edge<T>>) edgeset.clone();
+    }
 
     public boolean add(T node) {
 
@@ -58,8 +65,13 @@ public class ListGraph<T> { // DAMN YOU GENERICS
         if (hasConnection(from ,to)) {
             throw new IllegalStateException("Nodes are already connected");
         }
-        edges.get(from).add(new Edge(name ,from, to, weight, travelType));
-        edges.get(to).add(new Edge(name, to, from, weight, travelType));
+        Edge<T> fromedge = new Edge(name ,from, to, weight, travelType);
+        edges.get(from).add(fromedge);
+        edgeset.add(fromedge);
+
+        Edge<T> toedge = new Edge(name, to, from, weight, travelType);
+        edges.get(to).add(toedge);
+        edgeset.add(toedge);
 
 
     }
