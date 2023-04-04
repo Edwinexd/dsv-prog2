@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
@@ -42,7 +43,7 @@ public class StartController {
     private static final String MAP_FILE = "europa.gif";
 
     private boolean unsavedChanges = false;
-    private ListGraph listGraph = null;
+    private ListGraph<Node> listGraph = null;
     private HashMap<Circle, Node> drawnNodes = new HashMap<>();
     private HashMap<Line, Edge> drawnEdges = new HashMap<>();
 
@@ -121,7 +122,7 @@ public class StartController {
         }
     }
 
-    private void drawEdge(Edge e) {
+    private void drawEdge(Edge<Node> e) {
         Line line = new Line(e.getOrigin().getCoordinate().getX(), e.getOrigin().getCoordinate().getY(),
                 e.getDestination().getCoordinate().getX(), e.getDestination().getCoordinate().getY());
         line.setStrokeWidth(2);
@@ -131,13 +132,15 @@ public class StartController {
     }
 
     private void drawEdges() {
-        Set<Edge> targetEdges = listGraph.getEdges();
+        Set<Edge<Node>> targetEdges = listGraph.getEdges();
         targetEdges.removeIf(edge -> drawnEdges.values().contains(edge));
-        for (Edge e : targetEdges) {
+        for (Edge<Node> e : targetEdges) {
             System.out.println(e);
             drawEdge(e);
         }
     }
+
+
 
     private void drawMap() {
         drawNodes();
@@ -197,7 +200,7 @@ public class StartController {
         }
         Node start = drawnNodes.get(circlesSelected[0]);
         Node end = drawnNodes.get(circlesSelected[1]);
-        ArrayList<Edge> path = listGraph.getPath(start, end);
+        ArrayList<Edge<Node>> path = listGraph.getPath(start, end);
         if (path == null) {
             Alert alert = new Alert(AlertType.ERROR, "No path found", ButtonType.OK);
             alert.setTitle("Error!");
@@ -211,7 +214,7 @@ public class StartController {
             alert.initOwner(map.getScene().getWindow());
             String trajectory = "";
             int total = 0;
-            for (Edge edge : path) {
+            for (Edge<Node> edge : path) {
                 total += edge.getWeight();
                 trajectory += " to %s by %s takes %i \n".formatted(edge.getDestination().getName(),
                         edge.getTravelType(), edge.getWeight());
@@ -264,7 +267,7 @@ public class StartController {
 
         dialog.getDialogPane().setContent(grid);
 
-        
+
         dialog.showAndWait();
 
         String name = dialog.getEditor().getText();
@@ -275,11 +278,11 @@ public class StartController {
 
 
         // TODO Fix this funkyness
-        listGraph.connect(one, two, weight, name);
-        listGraph.connect(two, one, weight, name);
+        listGraph.connect("Insert Name here" ,one, two, weight, name);
+        listGraph.connect("Insert Name here" , two, one, weight, name);
         unsavedChanges = true;
         drawMap();
-        
+
     }
 
     @FXML
@@ -293,20 +296,56 @@ public class StartController {
             return;
         }
         String lines = String.join("\n", Files.readAllLines(Paths.get("europa.graph"), StandardCharsets.UTF_8));
-        listGraph = ListGraph.desterialise(lines);
+        listGraph = deserialize(lines); // TODO: Reimplement this here
         setImage();
         drawMap();
     }
 
+    private ListGraph<Node> deserialize(String input) {
+
+        ListGraph<Node> res = new ListGraph();
+        String[] lines = input.split("\n");
+        String[] nodes = lines[1].split(";");
+
+        for (int i = 0; i < nodes.length; i+=3) {
+            // TODO Dont use replace
+            res.add(new Node(nodes[i], new Coordinate(Double.parseDouble(nodes[i+1].replace(",", ".")), Double.parseDouble(nodes[i+2].replace(",", ".")))));
+        }
+        for (int i = 2; i < lines.length; i++) {
+            HashSet<Node> nodeset = res.getNodes();
+            String[] edgeData = lines[i].split(";");
+            Node from = res.findNode(edgeData[0]);
+            Node to = res.findNode(edgeData[1]);
+            res.connect("Insert Name Here" ,from, to, Integer.parseInt(edgeData[3]), edgeData[2]);
+        }
+        return res;
+    }
+
     @FXML
     private void saveMapAction() throws IOException {
-        String output = "file:%s\n".formatted(MAP_FILE) + listGraph.seraliaze();
+        String output = "file:%s\n".formatted(MAP_FILE) + serialize(); // TODO: Reimplement this here
         try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream("europa.graph"),
                 StandardCharsets.UTF_8)) {
             writer.write(output);
         }
         unsavedChanges = false;
 
+    }
+
+    private String serialize() {
+
+        StringBuilder res = new StringBuilder();
+
+        HashMap<Node, HashSet<Edge<Node>>> nodes = listGraph.getNodeGraph();
+
+        res.append(nodes.keySet().stream().map(node -> "%s;%f;%f".formatted(node.getName(), node.getCoordinate().getX(), node.getCoordinate().getY())).collect(Collectors.joining(";")));
+        res.append("\n");
+        for (HashSet<Edge<Node>> edges : nodes.values()) {
+            for (Edge<Node> edge: edges) {
+                res.append("%s;%s;%s;%d\n".formatted(node.getName(), edge.getDestination().getName(), edge.getTravelType(), edge.getWeight()));
+            }
+        }
+        return res.toString();
     }
 
     @FXML

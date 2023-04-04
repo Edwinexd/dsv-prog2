@@ -8,12 +8,12 @@ public class Node {
 
     private final String name;
     private Coordinate coordinate;
-    private HashSet<Edge> connections;
+    private HashSet<Edge<Node>> connections;
 
     public Node(String name, Coordinate coordinate) {
         this.name = name;
         this.coordinate = coordinate;
-        this.connections = new HashSet<Edge>();
+        this.connections = new HashSet<Edge<Node>>();
     }
 
     public String getName() {
@@ -24,12 +24,12 @@ public class Node {
         return coordinate;
     }
 
-    public void addConnection(Edge edge) {
+    public void addConnection(Edge<Node> edge) {
         connections.add(edge);
     }
 
     public boolean hasConnection(Node target) {
-        for (Edge edge : connections) {
+        for (Edge<Node> edge : connections) {
             if (edge.getDestination().equals(target)) {
                 return true;
             }
@@ -38,7 +38,7 @@ public class Node {
     }
 
     public void removeConnection(Node target) throws NoSuchElementException {
-        for (Edge edge : connections) {
+        for (Edge<Node> edge : connections) {
             if (edge.getDestination().equals(target)) {
                 connections.remove(edge);
                 return;
@@ -47,8 +47,8 @@ public class Node {
         throw new NoSuchElementException("No connection found");
     }
 
-    public Edge getConnection(Node target) throws NoSuchElementException {
-        for (Edge edge : connections) {
+    public Edge<Node> getConnection(Node target) throws NoSuchElementException {
+        for (Edge<Node> edge : connections) {
             if (edge.getDestination().equals(target)) {
                 return edge;
             }
@@ -56,8 +56,8 @@ public class Node {
         throw new NoSuchElementException("No connection found");
     }
 
-    public HashSet<Edge> getConnections() {
-        return (HashSet<Edge>) connections.clone();
+    public HashSet<Edge<Node>> getConnections() {
+        return (HashSet<Edge<Node>>) connections.clone();
     }
 
     @Override
@@ -65,6 +65,11 @@ public class Node {
         if (obj instanceof Node) {
             Node node = (Node) obj;
             return node.name.equals(this.name);
+        }
+        else if (obj instanceof String)
+        {
+            String name = (String) obj;
+            return this.name.equals(name);
         }
         return false;
     }
