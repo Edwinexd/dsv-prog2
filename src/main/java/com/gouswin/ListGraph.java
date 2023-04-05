@@ -26,8 +26,8 @@ public class ListGraph<T> { // DAMN YOU GENERICS
     // }
 
 
-    public HashSet<T> getNodes() {
-        return (HashSet<T>) nodes.keySet();
+    public Set<T> getNodes() {
+        return nodes.keySet();
     }
 
 
@@ -51,7 +51,6 @@ public class ListGraph<T> { // DAMN YOU GENERICS
 
     public void add(T node) {
         nodes.put(node, new HashSet<>());
-
     }
 
     public void remove(T node) throws NoSuchElementException {
@@ -78,10 +77,10 @@ public class ListGraph<T> { // DAMN YOU GENERICS
             throw new IllegalStateException("Nodes are already connected");
         }
         // TODO Review @Edwin
-        Edge<T> fromedge = new Edge<T>(from, to, weight, name);
+        Edge<T> fromedge = new Edge<T>(to, weight, name);
         nodes.get(from).add(fromedge);
 
-        Edge<T> toedge = new Edge<T>(to, from, weight, name);
+        Edge<T> toedge = new Edge<T>(from, weight, name);
         nodes.get(to).add(toedge);
     }
 

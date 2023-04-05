@@ -50,7 +50,7 @@ public class StartController {
     private boolean unsavedChanges = false;
     private ListGraph<Node> listGraph = null;
     private HashMap<Circle, Node> drawnNodes = new HashMap<>();
-    private HashMap<Line, Edge<Node>> drawnEdges = new HashMap<>();
+    private HashMap<Node, HashMap<Edge<Node>, Line>> drawnEdges = new HashMap<>();
 
     @FXML
     private ImageView map;
@@ -120,28 +120,36 @@ public class StartController {
     }
 
     private void drawNodes() {
-        HashSet<Node> targetNodes = listGraph.getNodes();
-        targetNodes.removeIf(node -> drawnNodes.values().contains(node));
-        for (Node n : targetNodes) {
-            drawNode(n);
+        for (Node n : listGraph.getNodes()) {
+            if (!drawnNodes.values().contains(n)) {
+                drawNode(n);
+            }
         }
     }
 
-    private void drawEdge(Node n, Edge<Node> e) {
-        Line line = new Line(e.getOrigin().getCoordinate().getX(), e.getOrigin().getCoordinate().getY(),
-                e.getDestination().getCoordinate().getX(), e.getDestination().getCoordinate().getY());
+    private void drawEdge(Node origin, Edge<Node> edge) {
+        Line line = new Line(origin.getCoordinate().getX(), origin.getCoordinate().getY(),
+                edge.getDestination().getCoordinate().getX(), edge.getDestination().getCoordinate().getY());
         line.setStrokeWidth(2);
         line.setStroke(javafx.scene.paint.Color.BLACK);
-        drawnEdges.put(line, e);
+        HashMap<Edge<Node>, Line> map = drawnEdges.get(origin);
+        if (map == null) {
+            map = new HashMap<>();
+            drawnEdges.put(origin, map);
+        }
+        map.put(edge, line);
         mapPane.getChildren().add(line);
     }
 
     private void drawEdges() {
-        HashMap<Node, HashSet<Edge<Node>>> targetEdges = listGraph.getNodeGraph().entrySet();
-        //targetEdges.removeIf(edge -> drawnEdges.values().contains(edge));
-        for (Edge<Node> e : targetEdges) {
-            System.out.println(e);
-            drawEdge(e);
+        HashMap<Node, HashSet<Edge<Node>>> targetEdges = listGraph.getNodeGraph();
+        for (Entry<Node, HashSet<Edge<Node>>> entry : targetEdges.entrySet()) {
+            for (Edge<Node> e : entry.getValue()) {
+                if (drawnEdges.get(entry.getKey()) != null && drawnEdges.get(entry.getKey()).containsKey(e)) {
+                    continue;
+                }
+                drawEdge(entry.getKey(), e);
+            }
         }
     }
 
@@ -322,8 +330,11 @@ public class StartController {
             
             Node from = nameNode.get(edgeData[0]);
             Node to = nameNode.get(edgeData[1]);
-            
-            res.connect(from, to, Integer.parseInt(edgeData[3]), edgeData[2]);
+            try {
+                res.connect(from, to, Integer.parseInt(edgeData[3]), edgeData[2]);
+            } catch (IllegalStateException e) {
+                // Connection already exists
+            }
         }
         return res;
     }
