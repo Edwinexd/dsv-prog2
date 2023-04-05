@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -213,7 +214,7 @@ public class StartController {
         }
         Node start = drawnNodes.get(circlesSelected[0]);
         Node end = drawnNodes.get(circlesSelected[1]);
-        ArrayList<Edge<Node>> path = listGraph.getPath(start, end);
+        List<Edge<Node>> path = listGraph.getPath(start, end);
         if (path == null) {
             Alert alert = new Alert(AlertType.ERROR, "No path found", ButtonType.OK);
             alert.setTitle("Error!");
@@ -286,8 +287,8 @@ public class StartController {
         String name = dialog.getEditor().getText();
         int weight = Integer.parseInt(weightField.getText());
 
-        System.out.println(name);
-        System.out.println(weight);
+        // System.out.println(name);
+        // System.out.println(weight);
 
 
         listGraph.connect(one, two, weight, name);

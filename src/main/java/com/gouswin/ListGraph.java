@@ -54,10 +54,14 @@ public class ListGraph<T> { // DAMN YOU GENERICS
     }
 
     public void remove(T node) throws NoSuchElementException {
-        // TODO Nuke shit that has relations to target node
-        if (nodes.remove(node) == null) {
+        if (nodes.get(node) == null) {
             throw new NoSuchElementException("Node not found");
         }
+        for(Edge<T> e: nodes.get(node)) {
+            nodes.get(e.getDestination()).removeIf(edge -> edge.getDestination() == node);
+            nodes.get(node).remove(e);
+        }
+        nodes.remove(node);
     }
 
     public boolean hasConnection(T from, T to) throws NoSuchElementException {
