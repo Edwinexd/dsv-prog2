@@ -215,6 +215,7 @@ public class StartController {
         Node start = drawnNodes.get(circlesSelected[0]);
         Node end = drawnNodes.get(circlesSelected[1]);
         List<Edge<Node>> path = listGraph.getPath(start, end);
+        System.out.println(path);
         if (path == null) {
             Alert alert = new Alert(AlertType.ERROR, "No path found", ButtonType.OK);
             alert.setTitle("Error!");
@@ -230,12 +231,13 @@ public class StartController {
             int total = 0;
             for (Edge<Node> edge : path) {
                 total += edge.getWeight();
-                trajectory += " to %s by %s takes %i \n".formatted(edge.getDestination().getName(),
+                trajectory += " to %s by %s takes %d \n".formatted(edge.getDestination().getName(),
                         edge.getName(), edge.getWeight());
 
             }
-            trajectory += "Total %i".formatted(total);
+            trajectory += "Total %d".formatted(total);
             alert.setContentText(trajectory);
+            alert.showAndWait();
         }
 
     }

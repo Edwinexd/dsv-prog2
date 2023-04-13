@@ -6,9 +6,9 @@ import java.util.stream.Collectors;
 
 class PathResult<T> {
     public int distance;
-    public ArrayList<Edge<T>> path;
+    public List<Edge<T>> path;
 
-    public PathResult(int distance, ArrayList<Edge<T>> path) {
+    public PathResult(int distance, List<Edge<T>> path) {
         this.distance = distance;
         this.path = path;
     }
@@ -59,7 +59,6 @@ public class ListGraph<T> { // DAMN YOU GENERICS
         }
         for(Edge<T> e: nodes.get(node)) {
             nodes.get(e.getDestination()).removeIf(edge -> edge.getDestination() == node);
-            nodes.get(node).remove(e);
         }
         nodes.remove(node);
     }
@@ -137,17 +136,17 @@ public class ListGraph<T> { // DAMN YOU GENERICS
 
     }
 
-    public ArrayList<Edge<T>> getPath(T from, T to) throws NoSuchElementException {
+    public List<Edge<T>> getPath(T from, T to) throws NoSuchElementException {
 
         nodesExists(from, to);
 
-        ArrayList<Edge<T>> res = runDepthSearch(from, to);
+        List<Edge<T>> res = runDepthSearch(from, to);
         return res;
 
     }
 
-    private ArrayList<Edge<T>> runDepthSearch(T start, T target) {
-        ArrayList<PathResult<T>> finallist = new ArrayList<>();
+    private List<Edge<T>> runDepthSearch(T start, T target) {
+        List<PathResult<T>> finallist = new LinkedList<>();
         Stack<T> nodepath = new Stack<>();
         Stack<Edge<T>> edgepath = new Stack<>();
         nodepath.push(start);
@@ -156,7 +155,7 @@ public class ListGraph<T> { // DAMN YOU GENERICS
             return null;
         for (Edge<T> conn : nodes.get(currentnode)) {
             edgepath.push(conn);
-            depthSearch(0 + conn.getWeight(), (T) conn.getDestination(), (Stack<T>) nodepath.clone(), (Stack<Edge<T>>) edgepath.clone(), target, finallist);
+            depthSearch(0 + conn.getWeight(), conn.getDestination(), nodepath, edgepath, target, finallist);
             edgepath.pop();
         }
         if (finallist.isEmpty()) {
@@ -168,10 +167,10 @@ public class ListGraph<T> { // DAMN YOU GENERICS
 
     }
 
-    private void depthSearch(int currentDistance, T currentnode, Stack<T> nodepath, Stack<Edge<T>> edgepath, T target, ArrayList<PathResult<T>> finallist) {
+    private void depthSearch(int currentDistance, T currentnode, Stack<T> nodepath, Stack<Edge<T>> edgepath, T target, List<PathResult<T>> finallist) {
         nodepath.push(currentnode);
         if (currentnode.equals(target)) {
-            finallist.add(new PathResult<T>(currentDistance, (ArrayList<Edge<T>>) edgepath.stream().toList()));
+            finallist.add(new PathResult<T>(currentDistance, edgepath.stream().toList()));
             return;
         }
 
@@ -184,7 +183,7 @@ public class ListGraph<T> { // DAMN YOU GENERICS
         }
         for (Edge<T> conn : targets) {
             edgepath.push(conn);
-            depthSearch(currentDistance + conn.getWeight(), conn.getDestination(), (Stack<T>) nodepath.clone(), (Stack<Edge<T>>) edgepath.clone(), target, finallist);
+            depthSearch(currentDistance + conn.getWeight(), conn.getDestination(), nodepath, edgepath, target, finallist);
             edgepath.pop();
         }
 
