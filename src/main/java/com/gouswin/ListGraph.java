@@ -55,10 +55,19 @@ public class ListGraph<T> { // DAMN YOU GENERICS
     }
 
     public void remove(T node) throws NoSuchElementException {
-        // TODO Nuke shit that has relations to target node
         if (nodes.remove(node) == null) {
             throw new NoSuchElementException("Node not found");
         }
+
+        for(Edge<T> edge : nodes.get(node))
+        {
+            T currnode = edge.getDestination();
+            disconnect(currnode, node);
+        }
+        nodes.get(node).clear();
+
+        nodes.remove(node);
+
     }
 
     public boolean hasConnection(T from, T to) throws NoSuchElementException {
@@ -78,10 +87,10 @@ public class ListGraph<T> { // DAMN YOU GENERICS
             throw new IllegalStateException("Nodes are already connected");
         }
         // TODO Review @Edwin
-        Edge<T> fromedge = new Edge<T>(from, to, weight, name);
+        Edge<T> fromedge = new Edge<T>(to, weight, name);
         nodes.get(from).add(fromedge);
 
-        Edge<T> toedge = new Edge<T>(to, from, weight, name);
+        Edge<T> toedge = new Edge<T>(from, weight, name);
         nodes.get(to).add(toedge);
     }
 
@@ -92,7 +101,7 @@ public class ListGraph<T> { // DAMN YOU GENERICS
         }
         // TODO Review @Edwin
         nodes.get(from).remove(getEdgeBetween(from, to));
-        nodes.get(to).remove(getEdgeBetween(to, from));
+        //nodes.get(to).remove(getEdgeBetween(to, from)); this will cause a ConcurrencyModificationException in other parts of the code, trust me bro.
     }
 
 
