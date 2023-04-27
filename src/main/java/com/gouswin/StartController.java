@@ -1,3 +1,8 @@
+/*
+    Erik Lind Gou-Said - erli1872
+    Edwin Sundberg - edsu
+ */
+
 package com.gouswin;
 
 import java.util.ArrayList;
@@ -293,7 +298,7 @@ public class StartController {
         // System.out.println(weight);
 
 
-        listGraph.connect(one, two, weight, name);
+        listGraph.connect(one, two, name, weight);
         unsavedChanges = true;
         drawMap();
 
@@ -334,7 +339,7 @@ public class StartController {
             Node from = nameNode.get(edgeData[0]);
             Node to = nameNode.get(edgeData[1]);
             try {
-                res.connect(from, to, Integer.parseInt(edgeData[3]), edgeData[2]);
+                res.connect(from, to, edgeData[2], Integer.parseInt(edgeData[2]));
             } catch (IllegalStateException e) {
                 // Connection already exists
             }

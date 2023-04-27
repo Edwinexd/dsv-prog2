@@ -1,29 +1,15 @@
 package com.gouswin;
 
 
+//Erik Lind Gou-Said : erli1872
+//Edwin Sundberg : edsu8469
+
 import java.util.*;
 import java.util.stream.Collectors;
 
-class PathResult<T> {
-    public int distance;
-    public List<Edge<T>> path;
+public class ListGraph<T> implements Graph<T> {
 
-    public PathResult(int distance, List<Edge<T>> path) {
-        this.distance = distance;
-        this.path = path;
-    }
-
-}
-
-public class ListGraph<T> { // DAMN YOU GENERICS
-
-    private HashMap<T, HashSet<Edge<T>>> nodes = new HashMap<>(); // T should always be hashable, but it might not be completely correct.
-
-
-    // public Set<Edge<T>> getEdges() {
-    //     // TODO This is gonna be painful
-    //     return (HashSet<Edge<T>>) edgeset.clone();
-    // }
+    private HashMap<T, HashSet<Edge<T>>> nodes = new HashMap<>();
 
 
     public Set<T> getNodes() {
@@ -37,7 +23,7 @@ public class ListGraph<T> { // DAMN YOU GENERICS
 
 
 
-    public HashSet<Edge<T>> getEdgesfrom(Node node) throws NoSuchElementException {
+    public HashSet<Edge<T>> getEdgesFrom(T node) throws NoSuchElementException {
         if (nodes.get(node) == null) {
             throw new NoSuchElementException("Node not found");
         }
@@ -55,10 +41,24 @@ public class ListGraph<T> { // DAMN YOU GENERICS
     }
 
     public void remove(T node) throws NoSuchElementException {
-        // TODO Nuke shit that has relations to target node
-        if (nodes.remove(node) == null) {
+        if (!nodes.containsKey(node)) {
             throw new NoSuchElementException("Node not found");
         }
+
+
+        List<T> destNode = new ArrayList<>();
+
+        for(Edge<T> edge : nodes.get(node))
+        {
+            destNode.add(edge.getDestination());
+
+        }
+
+        destNode.forEach(dest -> disconnect(node,dest));
+
+        nodes.get(node).clear();
+
+        nodes.remove(node);
     }
 
     public boolean hasConnection(T from, T to) throws NoSuchElementException {
@@ -66,7 +66,7 @@ public class ListGraph<T> { // DAMN YOU GENERICS
     }
 
 
-    public void connect(T from, T to, int weight, String name) throws IllegalArgumentException, IllegalStateException, NoSuchElementException {
+    public void connect(T from, T to, String name, int weight) throws IllegalArgumentException, IllegalStateException, NoSuchElementException {
         if (from.equals(to)) {
             throw new IllegalArgumentException("Cannot connect a node to itself");
         }
@@ -90,9 +90,9 @@ public class ListGraph<T> { // DAMN YOU GENERICS
         if (!hasConnection(from, to)) {
             throw new IllegalStateException("Nodes are not connected");
         }
-        // TODO Review @Edwin
+
         nodes.get(from).remove(getEdgeBetween(from, to));
-        //nodes.get(to).remove(getEdgeBetween(to, from)); this will cause a ConcurrencyModificationException in other parts of the code, trust me bro.
+        nodes.get(to).remove(getEdgeBetween(to, from));
     }
 
 
@@ -101,14 +101,15 @@ public class ListGraph<T> { // DAMN YOU GENERICS
         if (newWeight < 0) {
             throw new IllegalArgumentException("Weight cannot be negative");
         }
-        if (hasConnection(from, to)) {
+        if (!hasConnection(from, to)) {
             throw new NoSuchElementException("Nodes are not connected");
         }
         getEdgeBetween(from, to).setWeight(newWeight);
+        getEdgeBetween(to, from).setWeight(newWeight);
 
     }
 
-    @SafeVarargs
+
     private void nodesExists(T... nodes) throws NoSuchElementException {
         if (!this.nodes.keySet().containsAll(Arrays.asList(nodes))) {
             throw new NoSuchElementException("One or more nodes not found");
@@ -128,9 +129,12 @@ public class ListGraph<T> { // DAMN YOU GENERICS
         return res;
     }
 
-    public boolean pathExists(T from, T to) throws NoSuchElementException {
-        nodesExists(from, to);
-        return !runDepthSearch(from, to).isEmpty();
+    public boolean pathExists(T from, T to){
+        if(!nodes.containsKey(from) || !nodes.containsKey(to))
+        {
+            return false;
+        }
+        return runDepthSearch(from, to) != null;
 
     }
 
@@ -153,22 +157,22 @@ public class ListGraph<T> { // DAMN YOU GENERICS
             return null;
         for (Edge<T> conn : nodes.get(currentnode)) {
             edgepath.push(conn);
-            depthSearch(0 + conn.getWeight(), conn.getDestination(), nodepath, edgepath, target, finallist);
+            depthSearch(conn.getDestination(), nodepath, edgepath, target, finallist);
             edgepath.pop();
         }
         if (finallist.isEmpty()) {
             return null;
         } else {
-            finallist.sort(Comparator.comparingInt(pair -> pair.distance));
+            finallist.sort(Comparator.comparingInt(pair -> pair.getDistance()));
         }
-        return finallist.get(0).path;
+        return finallist.isEmpty() ? null : finallist.get(0).getPath();
 
     }
 
-    private void depthSearch(int currentDistance, T currentnode, Stack<T> nodepath, Stack<Edge<T>> edgepath, T target, List<PathResult<T>> finallist) {
+    private void depthSearch(T currentnode, Stack<T> nodepath, Stack<Edge<T>> edgepath, T target, List<PathResult<T>> finallist) {
         nodepath.push(currentnode);
         if (currentnode.equals(target)) {
-            finallist.add(new PathResult<T>(currentDistance, edgepath.stream().toList()));
+            finallist.add(new PathResult<T>(edgepath.stream().toList()));
             return;
         }
 
@@ -181,10 +185,12 @@ public class ListGraph<T> { // DAMN YOU GENERICS
         }
         for (Edge<T> conn : targets) {
             edgepath.push(conn);
-            depthSearch(currentDistance + conn.getWeight(), conn.getDestination(), nodepath, edgepath, target, finallist);
+            depthSearch(conn.getDestination(), nodepath, edgepath, target, finallist);
             edgepath.pop();
         }
 
     }
 }
+
+
 
