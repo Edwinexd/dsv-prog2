@@ -17,18 +17,20 @@ public class PathFinder extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        Parent fxml = loadFXML("start");
+        FXMLLoader loader = new FXMLLoader(this.getClass().getResource("start.fxml"));
+        Parent fxml = loader.load();
+        Controller controller = (Controller) loader.getController();
+        controller.setup(stage);
+
         scene = new Scene(fxml, fxml.prefWidth(0), fxml.prefHeight(0));
         stage.setTitle("PathFinder");
         stage.setScene(scene);
-        stage.setResizable(true); // TODO: Make this false
+        stage.setResizable(false);
         stage.show();
     }
 
-    private Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml + ".fxml"));
-        return loader.load();
-    }
+    // private Parent loadFXML(String fxml) throws IOException {
+    // }
 
     public static void main(String[] args) {
         launch();

@@ -43,7 +43,7 @@
                         <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
                      </padding>
                   </Button>
-                  <Button text="Show Connection">
+                  <Button text="Show Connection" onAction="#showConnectionAction">
                      <font>
                         <Font size="10.0" />
                      </font>
