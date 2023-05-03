@@ -27,9 +27,7 @@ public class Node {
         if (obj instanceof Node) {
             Node node = (Node) obj;
             return node.name.equals(this.name);
-        }
-        else if (obj instanceof String)
-        {
+        } else if (obj instanceof String) {
             String name = (String) obj;
             return this.name.equals(name);
         }

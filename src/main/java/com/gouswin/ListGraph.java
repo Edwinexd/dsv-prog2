@@ -1,6 +1,5 @@
 package com.gouswin;
 
-
 //Erik Lind Gou-Said : erli1872
 //Edwin Sundberg : edsu8469
 
@@ -11,17 +10,13 @@ public class ListGraph<T> implements Graph<T> {
 
     private HashMap<T, HashSet<Edge<T>>> nodes = new HashMap<>();
 
-
     public Set<T> getNodes() {
         return nodes.keySet();
     }
 
-
     // public HashMap<T, HashSet<Edge<T>>> getNodeGraph(){
-    //     return (HashMap<T, HashSet<Edge<T>>>) nodes.clone();
+    // return (HashMap<T, HashSet<Edge<T>>>) nodes.clone();
     // }
-
-
 
     public HashSet<Edge<T>> getEdgesFrom(T node) throws NoSuchElementException {
         if (nodes.get(node) == null) {
@@ -45,16 +40,14 @@ public class ListGraph<T> implements Graph<T> {
             throw new NoSuchElementException("Node not found");
         }
 
-
         List<T> destNode = new ArrayList<>();
 
-        for(Edge<T> edge : nodes.get(node))
-        {
+        for (Edge<T> edge : nodes.get(node)) {
             destNode.add(edge.getDestination());
 
         }
 
-        destNode.forEach(dest -> disconnect(node,dest));
+        destNode.forEach(dest -> disconnect(node, dest));
 
         nodes.get(node).clear();
 
@@ -65,8 +58,8 @@ public class ListGraph<T> implements Graph<T> {
         return getEdgeBetween(from, to) != null;
     }
 
-
-    public void connect(T from, T to, String name, int weight) throws IllegalArgumentException, IllegalStateException, NoSuchElementException {
+    public void connect(T from, T to, String name, int weight)
+            throws IllegalArgumentException, IllegalStateException, NoSuchElementException {
         if (from.equals(to)) {
             throw new IllegalArgumentException("Cannot connect a node to itself");
         }
@@ -95,8 +88,8 @@ public class ListGraph<T> implements Graph<T> {
         nodes.get(to).remove(getEdgeBetween(to, from));
     }
 
-
-    public void setConnectionWeight(T from, T to, int newWeight) throws NoSuchElementException, IllegalArgumentException {
+    public void setConnectionWeight(T from, T to, int newWeight)
+            throws NoSuchElementException, IllegalArgumentException {
         nodesExists(from, to);
         if (newWeight < 0) {
             throw new IllegalArgumentException("Weight cannot be negative");
@@ -109,13 +102,11 @@ public class ListGraph<T> implements Graph<T> {
 
     }
 
-
     private void nodesExists(T... nodes) throws NoSuchElementException {
         if (!this.nodes.keySet().containsAll(Arrays.asList(nodes))) {
             throw new NoSuchElementException("One or more nodes not found");
         }
     }
-
 
     @Override
     public String toString() {
@@ -129,9 +120,8 @@ public class ListGraph<T> implements Graph<T> {
         return res;
     }
 
-    public boolean pathExists(T from, T to){
-        if(!nodes.containsKey(from) || !nodes.containsKey(to))
-        {
+    public boolean pathExists(T from, T to) {
+        if (!nodes.containsKey(from) || !nodes.containsKey(to)) {
             return false;
         }
         return runDepthSearch(from, to) != null;
@@ -169,7 +159,8 @@ public class ListGraph<T> implements Graph<T> {
 
     }
 
-    private void depthSearch(T currentnode, Stack<T> nodepath, Stack<Edge<T>> edgepath, T target, List<PathResult<T>> finallist) {
+    private void depthSearch(T currentnode, Stack<T> nodepath, Stack<Edge<T>> edgepath, T target,
+            List<PathResult<T>> finallist) {
         nodepath.push(currentnode);
         if (currentnode.equals(target)) {
             finallist.add(new PathResult<T>(edgepath.stream().toList()));
@@ -191,6 +182,3 @@ public class ListGraph<T> implements Graph<T> {
 
     }
 }
-
-
-

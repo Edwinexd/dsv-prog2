@@ -12,7 +12,9 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="79.0" prefWidth="579.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gouswin.Controller">
+<BorderPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+   minWidth="-Infinity" prefHeight="79.0" prefWidth="579.0" xmlns="http://javafx.com/javafx/19"
+   xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gouswin.Controller">
    <top>
       <!-- Navpane stretches entire scene width -->
       <BorderPane fx:id="navPane" prefWidth="${mainPane.width}">
@@ -22,11 +24,16 @@
                <menus>
                   <Menu mnemonicParsing="false" text="File">
                      <items>
-                        <MenuItem fx:id="newMap" mnemonicParsing="false" onAction="#newMapAction" text="New Map" />
-                        <MenuItem fx:id="openMap" mnemonicParsing="false" onAction="#openMapAction" text="Open" />
-                        <MenuItem fx:id="saveMap" mnemonicParsing="false" onAction="#saveMapAction" text="Save" />
-                        <MenuItem fx:id="saveImage" mnemonicParsing="false" onAction="#saveImageAction" text="Save Image" />
-                        <MenuItem fx:id="exit" mnemonicParsing="false" onAction="#exitAction" text="Exit" />
+                        <MenuItem fx:id="newMap" mnemonicParsing="false" onAction="#newMapAction"
+                           text="New Map" />
+                        <MenuItem fx:id="openMap" mnemonicParsing="false" onAction="#openMapAction"
+                           text="Open" />
+                        <MenuItem fx:id="saveMap" mnemonicParsing="false" onAction="#saveMapAction"
+                           text="Save" />
+                        <MenuItem fx:id="saveImage" mnemonicParsing="false"
+                           onAction="#saveImageAction" text="Save Image" />
+                        <MenuItem fx:id="exit" mnemonicParsing="false" onAction="#exitAction"
+                           text="Exit" />
                      </items>
                   </Menu>
                </menus>
@@ -86,7 +93,7 @@
    <bottom>
       <Pane fx:id="mapPane" prefHeight="0.0" prefWidth="579.0">
          <children>
-             <ImageView fx:id="map" fitWidth="579.0" pickOnBounds="true" preserveRatio="true" />
+            <ImageView fx:id="map" fitWidth="579.0" pickOnBounds="true" preserveRatio="true" />
          </children>
       </Pane>
    </bottom>

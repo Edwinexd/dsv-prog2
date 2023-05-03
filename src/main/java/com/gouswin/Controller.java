@@ -45,7 +45,7 @@ import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 
 class NodeEdge {
-    
+
 }
 
 public class Controller {
@@ -256,7 +256,7 @@ public class Controller {
             for (int i = 0; i < path.size(); i++) {
                 Edge<Node> edge = path.get(i);
                 total += edge.getWeight();
-                String from = i == 0 ? start.getName() : path.get(i-1).getDestination().getName();
+                String from = i == 0 ? start.getName() : path.get(i - 1).getDestination().getName();
                 trajectory += "%s to %s by %s takes %d \n".formatted(from, edge.getDestination().getName(),
                         edge.getName(), edge.getWeight());
             }
@@ -296,7 +296,7 @@ public class Controller {
         Label nameLabel = new Label("Name:");
 
         Label weightLabel = new Label("Time:");
-        TextField weightField  = new TextField();
+        TextField weightField = new TextField();
 
         GridPane grid = new GridPane();
         grid.add(nameLabel, 0, 0);
@@ -304,10 +304,7 @@ public class Controller {
         grid.add(weightLabel, 0, 1);
         grid.add(weightField, 1, 1);
 
-
-
         dialog.getDialogPane().setContent(grid);
-
 
         dialog.showAndWait();
 
@@ -316,7 +313,6 @@ public class Controller {
 
         // System.out.println(name);
         // System.out.println(weight);
-
 
         listGraph.connect(one, two, name, weight);
         unsavedChanges = true;
@@ -348,17 +344,17 @@ public class Controller {
             alert.showAndWait();
             return;
         }
-        Alert alert = new Alert(AlertType.INFORMATION, "" ,ButtonType.OK);
+        Alert alert = new Alert(AlertType.INFORMATION, "", ButtonType.OK);
         alert.setTitle("Connection");
         alert.setHeaderText("Connection from %s to %s".formatted(one.getName(), two.getName()));
 
         Label nameLabel = new Label("Name:");
-        TextField nameField  = new TextField();
+        TextField nameField = new TextField();
         nameField.setText(e.getName());
         nameField.setDisable(true);
 
         Label weightLabel = new Label("Time:");
-        TextField weightField  = new TextField();
+        TextField weightField = new TextField();
         weightField.setText(String.valueOf(e.getWeight()));
         weightField.setDisable(true);
 
@@ -406,7 +402,7 @@ public class Controller {
         dialog.getEditor().setDisable(true);
 
         Label weightLabel = new Label("Time:");
-        TextField weightField  = new TextField();
+        TextField weightField = new TextField();
         weightField.setText(String.valueOf(edge.getWeight()));
 
         GridPane grid = new GridPane();
@@ -458,18 +454,19 @@ public class Controller {
         ListGraph<Node> res = new ListGraph<>();
         String[] lines = input.split("\n");
         HashMap<String, Node> nameNode = new HashMap<>();
-        
+
         String[] nodeTokens = lines[1].split(";");
-        for (int i = 0; i < nodeTokens.length; i+=3) {
+        for (int i = 0; i < nodeTokens.length; i += 3) {
             // TODO Dont use replace
-            Node node = new Node(nodeTokens[i], new Coordinate(Double.parseDouble(nodeTokens[i+1].replace(",", ".")), Double.parseDouble(nodeTokens[i+2].replace(",", "."))));
+            Node node = new Node(nodeTokens[i], new Coordinate(Double.parseDouble(nodeTokens[i + 1].replace(",", ".")),
+                    Double.parseDouble(nodeTokens[i + 2].replace(",", "."))));
             nameNode.put(nodeTokens[i], node);
             res.add(node);
         }
-        
+
         for (int i = 2; i < lines.length; i++) {
             String[] edgeData = lines[i].split(";");
-            
+
             Node from = nameNode.get(edgeData[0]);
             Node to = nameNode.get(edgeData[1]);
             try {
@@ -483,7 +480,8 @@ public class Controller {
 
     @FXML
     private void saveMapAction() throws IOException {
-        // String output = "file:%s\n".formatted(MAP_FILE) + serialize(); // TODO: Reimplement this here
+        // String output = "file:%s\n".formatted(MAP_FILE) + serialize(); // TODO:
+        // Reimplement this here
         String output = serialize();
         try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream("europa.graph"),
                 StandardCharsets.UTF_8)) {
@@ -499,11 +497,14 @@ public class Controller {
 
         res.append("file:%s\n".formatted(MAP_FILE));
         res.append("name;lat;lon\n");
-        res.append(listGraph.getNodes().stream().map(node -> "%s;%f;%f".formatted(node.getName(), node.getCoordinate().getX(), node.getCoordinate().getY())).collect(Collectors.joining(";")));
+        res.append(listGraph.getNodes().stream().map(
+                node -> "%s;%f;%f".formatted(node.getName(), node.getCoordinate().getX(), node.getCoordinate().getY()))
+                .collect(Collectors.joining(";")));
         res.append("\n");
         for (Node n : listGraph.getNodes()) {
             for (Edge<Node> edge : listGraph.getEdgesFrom(n)) {
-                res.append("%s;%s;%s;%d\n".formatted(n.getName(), edge.getDestination().getName(), edge.getName(), edge.getWeight()));
+                res.append("%s;%s;%s;%d\n".formatted(n.getName(), edge.getDestination().getName(), edge.getName(),
+                        edge.getWeight()));
             }
         }
         return res.toString();

@@ -1,6 +1,7 @@
 package com.gouswin;
 
 import java.util.*;
+
 public class PathResult<T> {
 
     private int distance;
@@ -10,20 +11,17 @@ public class PathResult<T> {
         this.distance = 0;
         this.path = path;
 
-        for(Edge<T> e : path)
-        {
+        for (Edge<T> e : path) {
             distance += e.getWeight();
         }
 
     }
 
-    public int getDistance()
-    {
+    public int getDistance() {
         return distance;
     }
 
-    public List<Edge<T>> getPath()
-    {
+    public List<Edge<T>> getPath() {
         return path;
     }
 

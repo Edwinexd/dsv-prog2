@@ -3,5 +3,6 @@ module com.gouswin {
     requires javafx.fxml;
 
     opens com.gouswin to javafx.fxml;
+
     exports com.gouswin;
 }

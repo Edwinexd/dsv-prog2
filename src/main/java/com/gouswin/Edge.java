@@ -36,6 +36,6 @@ public class Edge<T> {
 
     @Override
     public String toString() {
-        return "till %s med %s tar %d\n".formatted(destination ,name, weight);
+        return "till %s med %s tar %d\n".formatted(destination, name, weight);
     }
 }
