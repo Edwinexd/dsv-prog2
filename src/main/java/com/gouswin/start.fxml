@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="79.0" prefWidth="579.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gouswin.Controller">
+   <top>
+      <!-- Navpane stretches entire scene width -->
+      <BorderPane fx:id="navPane" prefWidth="${mainPane.width}">
+         <top>
+            <!-- Pref width should be to fill navPane -->
+            <MenuBar prefHeight="26.0" prefWidth="${navPane.width}" BorderPane.alignment="CENTER">
+               <menus>
+                  <Menu mnemonicParsing="false" text="File">
+                     <items>
+                        <MenuItem fx:id="newMap" mnemonicParsing="false" onAction="#newMapAction" text="New Map" />
+                        <MenuItem fx:id="openMap" mnemonicParsing="false" onAction="#openMapAction" text="Open" />
+                        <MenuItem fx:id="saveMap" mnemonicParsing="false" onAction="#saveMapAction" text="Save" />
+                        <MenuItem fx:id="saveImage" mnemonicParsing="false" onAction="#saveImageAction" text="Save Image" />
+                        <MenuItem fx:id="exit" mnemonicParsing="false" onAction="#exitAction" text="Exit" />
+                     </items>
+                  </Menu>
+               </menus>
+            </MenuBar>
+         </top>
+         <bottom>
+            <ButtonBar buttonMinWidth="0.0" prefHeight="40.0" BorderPane.alignment="CENTER_LEFT">
+               <buttons>
+                  <Button onAction="#findPathAction" text="Find Path">
+                     <font>
+                        <Font size="10.0" />
+                     </font>
+                     <padding>
+                        <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
+                     </padding>
+                  </Button>
+                  <Button text="Show Connection">
+                     <font>
+                        <Font size="10.0" />
+                     </font>
+                     <padding>
+                        <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
+                     </padding>
+                  </Button>
+                  <Button fx:id="newPlace" onAction="#newPlaceAction" text="New Place">
+                     <font>
+                        <Font size="10.0" />
+                     </font>
+                     <padding>
+                        <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
+                     </padding>
+                  </Button>
+                  <Button onAction="#newConnectionAction" text="New Connection">
+                     <font>
+                        <Font size="10.0" />
+                     </font>
+                     <padding>
+                        <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
+                     </padding>
+                  </Button>
+                  <Button onAction="#changeConnectionAction" text="Change Connection">
+                     <font>
+                        <Font size="10.0" />
+                     </font>
+                     <padding>
+                        <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
+                     </padding>
+                  </Button>
+               </buttons>
+               <BorderPane.margin>
+                  <Insets right="10.0" />
+               </BorderPane.margin>
+            </ButtonBar>
+         </bottom>
+      </BorderPane>
+   </top>
+   <bottom>
+      <Pane fx:id="mapPane" prefHeight="0.0" prefWidth="579.0">
+         <children>
+             <ImageView fx:id="map" fitWidth="579.0" pickOnBounds="true" preserveRatio="true" />
+         </children>
+      </Pane>
+   </bottom>
+</BorderPane>

@@ -17,9 +17,9 @@ public class ListGraph<T> implements Graph<T> {
     }
 
 
-    public HashMap<T, HashSet<Edge<T>>> getNodeGraph(){
-        return (HashMap<T, HashSet<Edge<T>>>) nodes.clone();
-    }
+    // public HashMap<T, HashSet<Edge<T>>> getNodeGraph(){
+    //     return (HashMap<T, HashSet<Edge<T>>>) nodes.clone();
+    // }
 
 
 
