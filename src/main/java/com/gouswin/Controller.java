@@ -52,7 +52,7 @@ public class Controller {
 
     private Circle[] circlesSelected = new Circle[2]; // store selected circles (highlighted in red in the UI);
 
-    private static final String MAP_FILE = "europa.gif";
+    private String mapFile = "europa.gif";
 
     private boolean unsavedChanges = false;
     private ListGraph<Node> listGraph = null;
@@ -88,6 +88,23 @@ public class Controller {
                 e.consume();
             }
         });
+    }
+
+    private void clearState() {
+        unsavedChanges = false;
+        listGraph = null;
+        // Remove elem if in drawnNodes.value or drawnEdges.anykey.anykey.value
+        List<Line> lines = new ArrayList<>();
+        for (HashMap<Edge<Node>, Line> edges : drawnEdges.values()) {
+            lines.addAll(edges.values());
+        }
+        mapPane.getChildren().removeIf(elem -> drawnNodes.containsKey(elem) || lines.contains(elem));
+        drawnNodes.clear();
+        drawnEdges.clear();
+        Arrays.fill(circlesSelected, null);
+        clearImage();
+        
+
     }
 
     private boolean selectCircle(Circle circle) {
@@ -180,7 +197,6 @@ public class Controller {
                 ButtonType.CANCEL);
         alert.setTitle("Warning!");
         alert.setHeaderText("");
-        alert.initOwner(map.getScene().getWindow());
         alert.showAndWait();
 
         return alert.getResult() == ButtonType.OK;
@@ -191,18 +207,31 @@ public class Controller {
         if (unsavedChanges && !discardChanges()) {
             return;
         }
-        setImage();
+        clearState();
+        setImage(mapFile);
         this.listGraph = new ListGraph<>();
     }
 
-    private void setImage() {
-        Image image = new Image(MAP_FILE);
+    private void clearImage() {
+        map.setImage(null);
+        map.setFitHeight(0);
+        map.setFitWidth(0);
+        mapPane.setPrefHeight(0);
+        mapPane.setPrefWidth(0);
 
         Stage stage = (Stage) newMap.getParentPopup().getOwnerWindow();
 
-        // System.out.println(navPane.getPrefHeight());
-        // System.out.println(navPane.getHeight());
-        System.out.println(stage.getHeight() - navPane.getHeight() - map.getFitHeight());
+        stage.setHeight(navPane.getHeight() + 40);
+    }
+
+    private void setImage(String mapFile) {
+        if (mapFile == null) {
+            throw new IllegalArgumentException("mapFile cannot be null");
+        }
+        Image image = new Image(mapFile);
+
+        Stage stage = (Stage) newMap.getParentPopup().getOwnerWindow();
+
         if (stage.getHeight() - navPane.getHeight() < image.getHeight()) {
             // TODO: Figure out why this needs to be ~40
             stage.setHeight(navPane.getHeight() + image.getHeight() + 40);
@@ -210,9 +239,6 @@ public class Controller {
             // TODO: Figure out why this needs to be ~40
             mapPane.setPrefHeight(image.getHeight() + 40);
         }
-        // stage.setHeight(stage.getHeight() + image.getHeight());
-        // map.setFitHeight(image.getHeight());
-        // mapPane.setPrefHeight(image.getHeight());
 
         if (stage.getWidth() < image.getWidth()) {
             stage.setWidth(image.getWidth());
@@ -232,25 +258,21 @@ public class Controller {
             Alert alert = new Alert(AlertType.ERROR, "Please select two places", ButtonType.OK);
             alert.setTitle("Error!");
             alert.setHeaderText("");
-            alert.initOwner(map.getScene().getWindow());
             alert.showAndWait();
             return;
         }
         Node start = drawnNodes.get(circlesSelected[0]);
         Node end = drawnNodes.get(circlesSelected[1]);
         List<Edge<Node>> path = listGraph.getPath(start, end);
-        System.out.println(path);
         if (path == null) {
             Alert alert = new Alert(AlertType.ERROR, "No path found", ButtonType.OK);
             alert.setTitle("Error!");
             alert.setHeaderText("");
-            alert.initOwner(map.getScene().getWindow());
             alert.showAndWait();
         } else {
             Alert alert = new Alert(AlertType.INFORMATION, "Path found", ButtonType.OK);
             alert.setTitle("%s to %s".formatted(start.getName(), end.getName()));
             alert.setHeaderText("");
-            alert.initOwner(map.getScene().getWindow());
             String trajectory = "";
             int total = 0;
             for (int i = 0; i < path.size(); i++) {
@@ -276,7 +298,6 @@ public class Controller {
             Alert alert = new Alert(AlertType.ERROR, "Please select two places", ButtonType.OK);
             alert.setTitle("Error!");
             alert.setHeaderText("");
-            alert.initOwner(map.getScene().getWindow());
             alert.showAndWait();
             return;
         }
@@ -286,7 +307,6 @@ public class Controller {
             Alert alert = new Alert(AlertType.ERROR, "Connection already exists", ButtonType.OK);
             alert.setTitle("Error!");
             alert.setHeaderText("");
-            alert.initOwner(map.getScene().getWindow());
             alert.showAndWait();
             return;
         }
@@ -311,9 +331,6 @@ public class Controller {
         String name = dialog.getEditor().getText();
         int weight = Integer.parseInt(weightField.getText());
 
-        // System.out.println(name);
-        // System.out.println(weight);
-
         listGraph.connect(one, two, name, weight);
         unsavedChanges = true;
         drawMap();
@@ -329,7 +346,6 @@ public class Controller {
             Alert alert = new Alert(AlertType.ERROR, "Please select two places", ButtonType.OK);
             alert.setTitle("Error!");
             alert.setHeaderText("");
-            alert.initOwner(map.getScene().getWindow());
             alert.showAndWait();
             return;
         }
@@ -340,7 +356,6 @@ public class Controller {
             Alert alert = new Alert(AlertType.ERROR, "No connection exists", ButtonType.OK);
             alert.setTitle("Error!");
             alert.setHeaderText("");
-            alert.initOwner(map.getScene().getWindow());
             alert.showAndWait();
             return;
         }
@@ -379,7 +394,6 @@ public class Controller {
             Alert alert = new Alert(AlertType.ERROR, "Please select two places", ButtonType.OK);
             alert.setTitle("Error!");
             alert.setHeaderText("");
-            alert.initOwner(map.getScene().getWindow());
             alert.showAndWait();
             return;
         }
@@ -390,7 +404,6 @@ public class Controller {
             Alert alert = new Alert(AlertType.ERROR, "No connection exists", ButtonType.OK);
             alert.setTitle("Error!");
             alert.setHeaderText("");
-            alert.initOwner(map.getScene().getWindow());
             alert.showAndWait();
             return;
         }
@@ -422,7 +435,6 @@ public class Controller {
             Alert alert = new Alert(AlertType.ERROR, "", ButtonType.OK);
             alert.setTitle("Error!");
             alert.setHeaderText("");
-            alert.initOwner(map.getScene().getWindow());
             alert.showAndWait();
             return;
         }
@@ -432,7 +444,6 @@ public class Controller {
             Alert alert = new Alert(AlertType.ERROR, "", ButtonType.OK);
             alert.setTitle("Error!");
             alert.setHeaderText(e.getMessage());
-            alert.initOwner(map.getScene().getWindow());
             alert.showAndWait();
             return;
         }
@@ -444,9 +455,18 @@ public class Controller {
         if (unsavedChanges && !discardChanges()) {
             return;
         }
+        clearState();
         String lines = String.join("\n", Files.readAllLines(Paths.get("europa.graph"), StandardCharsets.UTF_8));
-        listGraph = deserialize(lines); // TODO: Reimplement this here
-        setImage();
+        this.listGraph = deserialize(lines); // TODO: Reimplement this here
+        try {
+            setImage(lines.split("\n")[0].split(":")[1]);
+        } catch (IllegalArgumentException e) {
+            Alert alert = new Alert(AlertType.ERROR, "", ButtonType.OK);
+            alert.setTitle("Error!");
+            alert.setHeaderText(e.getMessage());
+            alert.showAndWait();
+            return;
+        }
         drawMap();
     }
 
@@ -495,8 +515,7 @@ public class Controller {
 
         StringBuilder res = new StringBuilder();
 
-        res.append("file:%s\n".formatted(MAP_FILE));
-        res.append("name;lat;lon\n");
+        res.append("file:%s\n".formatted(mapFile));
         res.append(listGraph.getNodes().stream().map(
                 node -> "%s;%f;%f".formatted(node.getName(), node.getCoordinate().getX(), node.getCoordinate().getY()))
                 .collect(Collectors.joining(";")));
@@ -547,7 +566,6 @@ public class Controller {
                     Alert alert = new Alert(AlertType.ERROR, "", ButtonType.OK);
                     alert.setTitle("Error!");
                     alert.setHeaderText("Name already in use!");
-                    alert.initOwner(map.getScene().getWindow());
                     alert.showAndWait();
                     return;
                 }
