@@ -7,24 +7,21 @@ package com.gouswin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
+
+// TODO uncomment this
+// import javax.imageio.ImageIO;
 
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -35,11 +32,9 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
@@ -60,27 +55,30 @@ public class Controller {
     private HashMap<Node, HashMap<Edge<Node>, Line>> drawnEdges = new HashMap<>();
 
     @FXML
+    private BorderPane mainPane;
+
+    @FXML
     private ImageView map;
     @FXML
-    private Pane mapPane;
+    private Pane outputArea;
     @FXML
     private Pane navPane;
 
     // Menu items
     @FXML
-    private MenuItem newMap;
+    private MenuItem menuNewMap;
     @FXML
-    private MenuItem openMap;
+    private MenuItem menuOpenFile;
     @FXML
-    private MenuItem saveMap;
+    private MenuItem menuSaveFile;
     @FXML
-    private MenuItem saveImage;
+    private MenuItem menuSaveImage;
     @FXML
-    private MenuItem exit;
+    private MenuItem menuExit;
 
     // Buttons
     @FXML
-    private Button newPlace;
+    private Button btnNewPlace;
 
     public void setup(Stage stage) {
         stage.setOnCloseRequest(e -> {
@@ -98,7 +96,7 @@ public class Controller {
         for (HashMap<Edge<Node>, Line> edges : drawnEdges.values()) {
             lines.addAll(edges.values());
         }
-        mapPane.getChildren().removeIf(elem -> drawnNodes.containsKey(elem) || lines.contains(elem));
+        outputArea.getChildren().removeIf(elem -> drawnNodes.containsKey(elem) || lines.contains(elem));
         drawnNodes.clear();
         drawnEdges.clear();
         Arrays.fill(circlesSelected, null);
@@ -148,8 +146,9 @@ public class Controller {
             }
 
         });
+        circle.setId(n.getName());
         drawnNodes.put(circle, n);
-        mapPane.getChildren().add(circle);
+        outputArea.getChildren().add(circle);
 
     }
 
@@ -173,7 +172,7 @@ public class Controller {
             drawnEdges.put(origin, map);
         }
         map.put(edge, line);
-        mapPane.getChildren().add(line);
+        outputArea.getChildren().add(line);
     }
 
     private void drawEdges() {
@@ -213,13 +212,15 @@ public class Controller {
     }
 
     private void clearImage() {
+        mapFile = "europa.gif"; // TODO: Store default in a constant
+
         map.setImage(null);
         map.setFitHeight(0);
         map.setFitWidth(0);
-        mapPane.setPrefHeight(0);
-        mapPane.setPrefWidth(0);
+        outputArea.setPrefHeight(0);
+        outputArea.setPrefWidth(0);
 
-        Stage stage = (Stage) newMap.getParentPopup().getOwnerWindow();
+        Stage stage = (Stage) menuNewMap.getParentPopup().getOwnerWindow();
 
         stage.setHeight(navPane.getHeight() + 40);
     }
@@ -230,20 +231,20 @@ public class Controller {
         }
         Image image = new Image(mapFile);
 
-        Stage stage = (Stage) newMap.getParentPopup().getOwnerWindow();
+        Stage stage = (Stage) menuNewMap.getParentPopup().getOwnerWindow();
 
         if (stage.getHeight() - navPane.getHeight() < image.getHeight()) {
             // TODO: Figure out why this needs to be ~40
             stage.setHeight(navPane.getHeight() + image.getHeight() + 40);
             map.setFitHeight(image.getHeight());
             // TODO: Figure out why this needs to be ~40
-            mapPane.setPrefHeight(image.getHeight() + 40);
+            outputArea.setPrefHeight(image.getHeight() + 40);
         }
 
         if (stage.getWidth() < image.getWidth()) {
             stage.setWidth(image.getWidth());
             map.setFitWidth(image.getWidth());
-            mapPane.setPrefWidth(image.getWidth());
+            outputArea.setPrefWidth(image.getWidth());
         }
 
         map.setImage(image);
@@ -532,7 +533,21 @@ public class Controller {
     @FXML
     private void saveImageAction() {
         // Take a screenshot of the window
-        // WritableImage image = mapPane.snapshot(new SnapshotParameters(), null);
+        // TODO: Test this, unable to test locally (Edwin 8/5)
+        // TODO: Uncomment this  
+        // try {
+        //     WritableImage image = mainPane.snapshot(null, null);
+        //     BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
+        //     ImageIO.write(bufferedImage, "png", new File("capture.png");
+        // } catch (IOException e) {
+        //     // TODO Generalize displaying error
+        //     Alert alert = new Alert(AlertType.ERROR, "", ButtonType.OK);
+        //     alert.setTitle("Error!");
+        //     alert.setHeaderText(e.getMessage());
+        //     alert.showAndWait();
+        //     return;
+        // }
+        throw new UnsupportedOperationException();
     }
 
     @FXML
@@ -545,13 +560,13 @@ public class Controller {
 
     @FXML
     private void newPlaceAction() {
-        newPlace.setDisable(true);
+        btnNewPlace.setDisable(true);
         map.setCursor(Cursor.CROSSHAIR);
         map.setOnMouseClicked(e -> {
             Coordinate coordinate = new Coordinate(e.getX(), e.getY());
             map.setOnMouseClicked(null);
             map.setCursor(Cursor.DEFAULT);
-            newPlace.setDisable(false);
+            btnNewPlace.setDisable(false);
             // Have user input location name
             TextInputDialog dialog = new TextInputDialog();
             dialog.setTitle("Name");

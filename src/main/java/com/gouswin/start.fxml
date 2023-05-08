@@ -20,19 +20,19 @@
       <BorderPane fx:id="navPane" prefWidth="${mainPane.width}">
          <top>
             <!-- Pref width should be to fill navPane -->
-            <MenuBar prefHeight="26.0" prefWidth="${navPane.width}" BorderPane.alignment="CENTER">
+            <MenuBar prefHeight="26.0" prefWidth="${navPane.width}" BorderPane.alignment="CENTER" fx:id="menu">
                <menus>
-                  <Menu mnemonicParsing="false" text="File">
+                  <Menu mnemonicParsing="false" text="File" fx:id="menuFile">
                      <items>
-                        <MenuItem fx:id="newMap" mnemonicParsing="false" onAction="#newMapAction"
+                        <MenuItem fx:id="menuNewMap" mnemonicParsing="false" onAction="#newMapAction"
                            text="New Map" />
-                        <MenuItem fx:id="openMap" mnemonicParsing="false" onAction="#openMapAction"
+                        <MenuItem fx:id="menuOpenFile" mnemonicParsing="false" onAction="#openMapAction"
                            text="Open" />
-                        <MenuItem fx:id="saveMap" mnemonicParsing="false" onAction="#saveMapAction"
+                        <MenuItem fx:id="menuSaveFile" mnemonicParsing="false" onAction="#saveMapAction"
                            text="Save" />
-                        <MenuItem fx:id="saveImage" mnemonicParsing="false"
+                        <MenuItem fx:id="menuSaveImage" mnemonicParsing="false"
                            onAction="#saveImageAction" text="Save Image" />
-                        <MenuItem fx:id="exit" mnemonicParsing="false" onAction="#exitAction"
+                        <MenuItem fx:id="menuExit" mnemonicParsing="false" onAction="#exitAction"
                            text="Exit" />
                      </items>
                   </Menu>
@@ -42,7 +42,7 @@
          <bottom>
             <ButtonBar buttonMinWidth="0.0" prefHeight="40.0" BorderPane.alignment="CENTER_LEFT">
                <buttons>
-                  <Button onAction="#findPathAction" text="Find Path">
+                  <Button onAction="#findPathAction" text="Find Path" fx:id="btnFindPath">
                      <font>
                         <Font size="10.0" />
                      </font>
@@ -50,7 +50,7 @@
                         <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
                      </padding>
                   </Button>
-                  <Button text="Show Connection" onAction="#showConnectionAction">
+                  <Button text="Show Connection" onAction="#showConnectionAction" fx:id="btnShowConnection">
                      <font>
                         <Font size="10.0" />
                      </font>
@@ -58,7 +58,7 @@
                         <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
                      </padding>
                   </Button>
-                  <Button fx:id="newPlace" onAction="#newPlaceAction" text="New Place">
+                  <Button onAction="#newPlaceAction" text="New Place" fx:id="btnNewPlace">
                      <font>
                         <Font size="10.0" />
                      </font>
@@ -66,7 +66,7 @@
                         <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
                      </padding>
                   </Button>
-                  <Button onAction="#newConnectionAction" text="New Connection">
+                  <Button onAction="#newConnectionAction" text="New Connection" fx:id="btnNewConnection">
                      <font>
                         <Font size="10.0" />
                      </font>
@@ -74,7 +74,7 @@
                         <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
                      </padding>
                   </Button>
-                  <Button onAction="#changeConnectionAction" text="Change Connection">
+                  <Button onAction="#changeConnectionAction" text="Change Connection" fx:id="btnChangeConnection">
                      <font>
                         <Font size="10.0" />
                      </font>
@@ -91,7 +91,7 @@
       </BorderPane>
    </top>
    <bottom>
-      <Pane fx:id="mapPane" prefHeight="0.0" prefWidth="579.0">
+      <Pane fx:id="outputArea" prefHeight="0.0" prefWidth="579.0">
          <children>
             <ImageView fx:id="map" fitWidth="579.0" pickOnBounds="true" preserveRatio="true" />
          </children>
