@@ -1,12 +1,14 @@
+package com.gouswin;
+
 /*
     Erik Lind Gou-Said - erli1872
     Edwin Sundberg - edsu
  */
 
-package com.gouswin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -19,6 +21,9 @@ import java.util.stream.Collectors;
 
 // TODO uncomment this
 // import javax.imageio.ImageIO;
+// import javafx.embed.swing.SwingFXUtils;
+// import java.awt.image.BufferedImage;
+// import javafx.scene.image.WritableImage;
 
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
@@ -45,12 +50,15 @@ class NodeEdge {
 
 public class Controller {
 
-    private Circle[] circlesSelected = new Circle[2]; // store selected circles (highlighted in red in the UI);
-
-    private String mapFile = "europa.gif";
-
-    private boolean unsavedChanges = false;
+    private String DEFAULT_MAP_FILE = "europa.gif";
+    
+    
     private ListGraph<Node> listGraph = null;
+    
+    private String mapFile = DEFAULT_MAP_FILE;
+
+    private Circle[] circlesSelected = new Circle[2]; // store selected circles (highlighted in red in the UI);
+    private boolean unsavedChanges = false;
     private HashMap<Circle, Node> drawnNodes = new HashMap<>();
     private HashMap<Node, HashMap<Edge<Node>, Line>> drawnEdges = new HashMap<>();
 
@@ -105,6 +113,13 @@ public class Controller {
 
     }
 
+    private void displayError(String message) {
+        Alert alert = new Alert(AlertType.ERROR, message, ButtonType.OK);
+        alert.setTitle("Error!");
+        alert.setHeaderText("");
+        alert.showAndWait();
+    }
+
     private boolean selectCircle(Circle circle) {
         for (int i = 0; i < circlesSelected.length; i++) {
             if (circlesSelected[i] == circle) {
@@ -125,6 +140,15 @@ public class Controller {
             }
         }
         return false;
+    }
+
+    private boolean completedSelection() {
+        for (int i = 0; i < circlesSelected.length; i++) {
+            if (circlesSelected[i] == null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void drawNode(Node n) {
@@ -207,13 +231,12 @@ public class Controller {
             return;
         }
         clearState();
-        setImage(mapFile);
+        setImage(DEFAULT_MAP_FILE);
         this.listGraph = new ListGraph<>();
     }
 
     private void clearImage() {
-        mapFile = "europa.gif"; // TODO: Store default in a constant
-
+        mapFile = null;
         map.setImage(null);
         map.setFitHeight(0);
         map.setFitWidth(0);
@@ -229,16 +252,19 @@ public class Controller {
         if (mapFile == null) {
             throw new IllegalArgumentException("mapFile cannot be null");
         }
+        this.mapFile = mapFile;
+
         Image image = new Image(mapFile);
 
         Stage stage = (Stage) menuNewMap.getParentPopup().getOwnerWindow();
 
+        // TODO: Figure out why this needs to be ~40 + better var name
+        int MENU_HEIGHT = 40;
+
         if (stage.getHeight() - navPane.getHeight() < image.getHeight()) {
-            // TODO: Figure out why this needs to be ~40
-            stage.setHeight(navPane.getHeight() + image.getHeight() + 40);
+            stage.setHeight(navPane.getHeight() + image.getHeight() + MENU_HEIGHT);
             map.setFitHeight(image.getHeight());
-            // TODO: Figure out why this needs to be ~40
-            outputArea.setPrefHeight(image.getHeight() + 40);
+            outputArea.setPrefHeight(image.getHeight() + MENU_HEIGHT);
         }
 
         if (stage.getWidth() < image.getWidth()) {
@@ -252,8 +278,7 @@ public class Controller {
 
     @FXML
     private void findPathAction() {
-        // TODO This doesnt actually ensure we have two circles selected
-        if (circlesSelected[1] == null || circlesSelected[0] == null) {
+        if (!completedSelection()) {
             // if one or less circles are selected, then prompt the user to select two
             // circles
             Alert alert = new Alert(AlertType.ERROR, "Please select two places", ButtonType.OK);
@@ -292,14 +317,8 @@ public class Controller {
 
     @FXML
     private void newConnectionAction() {
-        // TODO This doesnt actually ensure we have two circles selected
-        if (circlesSelected[1] == null) {
-            // if one or less circles are selected, then prompt the user to select two
-            // circles
-            Alert alert = new Alert(AlertType.ERROR, "Please select two places", ButtonType.OK);
-            alert.setTitle("Error!");
-            alert.setHeaderText("");
-            alert.showAndWait();
+        if (!completedSelection()) {
+            displayError("Please select two places");
             return;
         }
         Node one = drawnNodes.get(circlesSelected[0]);
@@ -340,24 +359,15 @@ public class Controller {
 
     @FXML
     private void showConnectionAction() {
-        // TODO This doesnt actually ensure we have two circles selected
-        if (circlesSelected[1] == null) {
-            // if one or less circles are selected, then prompt the user to select two
-            // circles
-            Alert alert = new Alert(AlertType.ERROR, "Please select two places", ButtonType.OK);
-            alert.setTitle("Error!");
-            alert.setHeaderText("");
-            alert.showAndWait();
+        if (!completedSelection()) {
+            displayError("Please select two places");
             return;
         }
         Node one = drawnNodes.get(circlesSelected[0]);
         Node two = drawnNodes.get(circlesSelected[1]);
         Edge<Node> e = listGraph.getEdgeBetween(one, two);
         if (e == null) {
-            Alert alert = new Alert(AlertType.ERROR, "No connection exists", ButtonType.OK);
-            alert.setTitle("Error!");
-            alert.setHeaderText("");
-            alert.showAndWait();
+            displayError("No connection exists");
             return;
         }
         Alert alert = new Alert(AlertType.INFORMATION, "", ButtonType.OK);
@@ -388,10 +398,7 @@ public class Controller {
 
     @FXML
     private void changeConnectionAction() {
-        // TODO This doesnt actually ensure we have two circles selected
-        if (circlesSelected[1] == null) {
-            // if one or less circles are selected, then prompt the user to select two
-            // circles
+        if (!completedSelection()) {
             Alert alert = new Alert(AlertType.ERROR, "Please select two places", ButtonType.OK);
             alert.setTitle("Error!");
             alert.setHeaderText("");
@@ -432,20 +439,13 @@ public class Controller {
         try {
             weight = Integer.parseInt(weightField.getText());
         } catch (NumberFormatException e) {
-            // TODO Generalize displaying error
-            Alert alert = new Alert(AlertType.ERROR, "", ButtonType.OK);
-            alert.setTitle("Error!");
-            alert.setHeaderText("");
-            alert.showAndWait();
+            displayError("Weight must be an integer!");
             return;
         }
         try {
             listGraph.setConnectionWeight(one, two, weight);
         } catch (IllegalArgumentException e) {
-            Alert alert = new Alert(AlertType.ERROR, "", ButtonType.OK);
-            alert.setTitle("Error!");
-            alert.setHeaderText(e.getMessage());
-            alert.showAndWait();
+            displayError(e.getMessage());
             return;
         }
 
@@ -458,7 +458,7 @@ public class Controller {
         }
         clearState();
         String lines = String.join("\n", Files.readAllLines(Paths.get("europa.graph"), StandardCharsets.UTF_8));
-        this.listGraph = deserialize(lines); // TODO: Reimplement this here
+        this.listGraph = deserialize(lines);
         try {
             setImage(lines.split("\n")[0].split(":")[1]);
         } catch (IllegalArgumentException e) {
@@ -493,7 +493,7 @@ public class Controller {
             try {
                 res.connect(from, to, edgeData[2], Integer.parseInt(edgeData[3]));
             } catch (IllegalStateException e) {
-                // Connection already exists
+                // Connection already created
             }
         }
         return res;
@@ -501,8 +501,10 @@ public class Controller {
 
     @FXML
     private void saveMapAction() throws IOException {
-        // String output = "file:%s\n".formatted(MAP_FILE) + serialize(); // TODO:
-        // Reimplement this here
+        if (mapFile == null) {
+            displayError("No map is open!");
+            return;
+        }
         String output = serialize();
         try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream("europa.graph"),
                 StandardCharsets.UTF_8)) {
@@ -533,21 +535,15 @@ public class Controller {
     @FXML
     private void saveImageAction() {
         // Take a screenshot of the window
-        // TODO: Test this, unable to test locally (Edwin 8/5)
-        // TODO: Uncomment this  
-        // try {
-        //     WritableImage image = mainPane.snapshot(null, null);
-        //     BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
-        //     ImageIO.write(bufferedImage, "png", new File("capture.png");
-        // } catch (IOException e) {
-        //     // TODO Generalize displaying error
-        //     Alert alert = new Alert(AlertType.ERROR, "", ButtonType.OK);
-        //     alert.setTitle("Error!");
-        //     alert.setHeaderText(e.getMessage());
-        //     alert.showAndWait();
-        //     return;
-        // }
-        throw new UnsupportedOperationException();
+        // TODO: Uncomment this, commented as I can't run it locally.
+        try {
+            WritableImage image = mainPane.snapshot(null, null);
+            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
+            ImageIO.write(bufferedImage, "png", new File("capture.png"));
+        } catch (IOException e) {
+            displayError("IOException: " + e.getMessage());
+            return;
+        }
     }
 
     @FXML
@@ -555,7 +551,8 @@ public class Controller {
         if (unsavedChanges && !discardChanges()) {
             return;
         }
-        System.exit(0);
+        Stage stage = (Stage) mainPane.getScene().getWindow();
+        stage.close();
     }
 
     @FXML
@@ -577,11 +574,7 @@ public class Controller {
             if (res != null) {
                 // Check if name already exists
                 if (listGraph.getNodes().stream().anyMatch(node -> node.getName().equals(res))) {
-                    // TODO Generalize displaying error
-                    Alert alert = new Alert(AlertType.ERROR, "", ButtonType.OK);
-                    alert.setTitle("Error!");
-                    alert.setHeaderText("Name already in use!");
-                    alert.showAndWait();
+                    displayError("The name " + res + " is already in use!");
                     return;
                 }
                 listGraph.add(new Node(res, coordinate));

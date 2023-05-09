@@ -1,7 +1,11 @@
 package com.gouswin;
 
-import java.util.*;
+import java.util.List;
 
+/*
+    Erik Lind Gou-Said - erli1872
+    Edwin Sundberg - edsu8469
+ */
 public class PathResult<T> {
 
     private int distance;

@@ -20,6 +20,12 @@
             <artifactId>javafx-fxml</artifactId>
             <version>17</version>
         </dependency>
+        <!-- Swing for javafx -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>17</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

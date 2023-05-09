@@ -1,10 +1,21 @@
 package com.gouswin;
 
-//Erik Lind Gou-Said : erli1872
-//Edwin Sundberg : edsu8469
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.Stack;
 import java.util.stream.Collectors;
+
+/*
+    Erik Lind Gou-Said - erli1872
+    Edwin Sundberg - edsu8469
+*/
 
 public class ListGraph<T> implements Graph<T> {
 
@@ -102,6 +113,7 @@ public class ListGraph<T> implements Graph<T> {
 
     }
 
+    @SafeVarargs
     private void nodesExists(T... nodes) throws NoSuchElementException {
         if (!this.nodes.keySet().containsAll(Arrays.asList(nodes))) {
             throw new NoSuchElementException("One or more nodes not found");

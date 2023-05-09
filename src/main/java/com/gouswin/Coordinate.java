@@ -1,5 +1,8 @@
 package com.gouswin;
-
+/*
+    Erik Lind Gou-Said - erli1872
+    Edwin Sundberg - edsu
+ */
 public class Coordinate {
     private double x;
     private double y;

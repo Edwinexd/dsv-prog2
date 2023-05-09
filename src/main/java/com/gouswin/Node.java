@@ -1,9 +1,9 @@
 package com.gouswin;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.NoSuchElementException;
-
+/*
+    Erik Lind Gou-Said - erli1872
+    Edwin Sundberg - edsu8469
+*/
 public class Node {
 
     private final String name;

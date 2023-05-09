@@ -8,8 +8,9 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-/**
- * JavaFX App
+/*
+    Erik Lind Gou-Said - erli1872
+    Edwin Sundberg - edsu8469
  */
 public class PathFinder extends Application {
 
