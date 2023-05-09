@@ -18,7 +18,7 @@ public class PathFinder extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader loader = new FXMLLoader(this.getClass().getResource("start.fxml"));
+        FXMLLoader loader = new FXMLLoader(this.getClass().getResource("app.fxml"));
         Parent fxml = loader.load();
         Controller controller = (Controller) loader.getController();
         controller.setup(stage);
@@ -29,10 +29,7 @@ public class PathFinder extends Application {
         stage.setResizable(false);
         stage.show();
     }
-
-    // private Parent loadFXML(String fxml) throws IOException {
-    // }
-
+    
     public static void main(String[] args) {
         launch();
     }

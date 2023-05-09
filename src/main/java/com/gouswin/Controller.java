@@ -19,11 +19,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// TODO uncomment this
-// import javax.imageio.ImageIO;
-// import javafx.embed.swing.SwingFXUtils;
-// import java.awt.image.BufferedImage;
-// import javafx.scene.image.WritableImage;
+import javax.imageio.ImageIO;
+import javafx.embed.swing.SwingFXUtils;
+import java.awt.image.BufferedImage;
+import javafx.scene.image.WritableImage;
 
 import javafx.fxml.FXML;
 import javafx.scene.Cursor;
@@ -50,27 +49,34 @@ class NodeEdge {
 
 public class Controller {
 
-    private String DEFAULT_MAP_FILE = "europa.gif";
-    
+    private static final String DEFAULT_MAP_FILE = "europa.gif";
+    private static final int NODE_RADIUS = 10;
+    private static final int EDGE_WIDTH = 2;
+    // TODO: Figure out why this needs to be ~40 + better var name
+    private static final int MENU_HEIGHT = 40;
     
     private ListGraph<Node> listGraph = null;
     
     private String mapFile = DEFAULT_MAP_FILE;
 
-    private Circle[] circlesSelected = new Circle[2]; // store selected circles (highlighted in red in the UI);
+    private Circle[] circlesSelected = new Circle[2]; // Store selected circles (highlighted in red in the UI);
     private boolean unsavedChanges = false;
     private HashMap<Circle, Node> drawnNodes = new HashMap<>();
     private HashMap<Node, HashMap<Edge<Node>, Line>> drawnEdges = new HashMap<>();
 
+    // FXML containers
     @FXML
-    private BorderPane mainPane;
+    private BorderPane mainPane; // Wrapper around the entire UI
+    
+    @FXML
+    private Pane outputArea; // Container for the map image along with nodes and edges
+    
+    @FXML
+    private Pane navPane; // Wrapper around the navigation UI
 
+    // Elements
     @FXML
     private ImageView map;
-    @FXML
-    private Pane outputArea;
-    @FXML
-    private Pane navPane;
 
     // Menu items
     @FXML
@@ -88,6 +94,7 @@ public class Controller {
     @FXML
     private Button btnNewPlace;
 
+    // Helper methods
     public void setup(Stage stage) {
         stage.setOnCloseRequest(e -> {
             if (unsavedChanges && !discardChanges()) {
@@ -142,7 +149,7 @@ public class Controller {
         return false;
     }
 
-    private boolean completedSelection() {
+    private boolean selectionIsComplete() {
         for (int i = 0; i < circlesSelected.length; i++) {
             if (circlesSelected[i] == null) {
                 return false;
@@ -152,8 +159,7 @@ public class Controller {
     }
 
     private void drawNode(Node n) {
-        Circle circle = new Circle(n.getCoordinate().getX(), n.getCoordinate().getY(), 10);
-        // change color of circle to a random color
+        Circle circle = new Circle(n.getCoordinate().getX(), n.getCoordinate().getY(), NODE_RADIUS);
         circle.setCursor(Cursor.HAND);
         circle.setFill(javafx.scene.paint.Color.BLUE);
         circle.onMouseClickedProperty().set(e -> {
@@ -187,7 +193,7 @@ public class Controller {
     private void drawEdge(Node origin, Edge<Node> edge) {
         Line line = new Line(origin.getCoordinate().getX(), origin.getCoordinate().getY(),
                 edge.getDestination().getCoordinate().getX(), edge.getDestination().getCoordinate().getY());
-        line.setStrokeWidth(2);
+        line.setStrokeWidth(EDGE_WIDTH);
         line.setStroke(javafx.scene.paint.Color.BLACK);
         line.setMouseTransparent(true);
         HashMap<Edge<Node>, Line> map = drawnEdges.get(origin);
@@ -225,16 +231,7 @@ public class Controller {
         return alert.getResult() == ButtonType.OK;
     }
 
-    @FXML
-    private void newMapAction() {
-        if (unsavedChanges && !discardChanges()) {
-            return;
-        }
-        clearState();
-        setImage(DEFAULT_MAP_FILE);
-        this.listGraph = new ListGraph<>();
-    }
-
+    // Image handling
     private void clearImage() {
         mapFile = null;
         map.setImage(null);
@@ -245,7 +242,7 @@ public class Controller {
 
         Stage stage = (Stage) menuNewMap.getParentPopup().getOwnerWindow();
 
-        stage.setHeight(navPane.getHeight() + 40);
+        stage.setHeight(navPane.getHeight() + MENU_HEIGHT);
     }
 
     private void setImage(String mapFile) {
@@ -257,9 +254,6 @@ public class Controller {
         Image image = new Image(mapFile);
 
         Stage stage = (Stage) menuNewMap.getParentPopup().getOwnerWindow();
-
-        // TODO: Figure out why this needs to be ~40 + better var name
-        int MENU_HEIGHT = 40;
 
         if (stage.getHeight() - navPane.getHeight() < image.getHeight()) {
             stage.setHeight(navPane.getHeight() + image.getHeight() + MENU_HEIGHT);
@@ -276,79 +270,129 @@ public class Controller {
         map.setImage(image);
     }
 
+    // Seralization
+    private String serialize() {
+        StringBuilder res = new StringBuilder();
+
+        res.append("file:%s\n".formatted(mapFile));
+        res.append(listGraph.getNodes().stream().map(
+                node -> "%s;%f;%f".formatted(node.getName(), node.getCoordinate().getX(), node.getCoordinate().getY()))
+                .collect(Collectors.joining(";")));
+        res.append("\n");
+        for (Node n : listGraph.getNodes()) {
+            for (Edge<Node> edge : listGraph.getEdgesFrom(n)) {
+                res.append("%s;%s;%s;%d\n".formatted(n.getName(), edge.getDestination().getName(), edge.getName(),
+                        edge.getWeight()));
+            }
+        }
+        return res.toString();
+    }
+
+    private ListGraph<Node> deserialize(String input) {
+        ListGraph<Node> res = new ListGraph<>();
+        String[] lines = input.split("\n");
+        HashMap<String, Node> nameNode = new HashMap<>();
+
+        String[] nodeTokens = lines[1].split(";");
+        for (int i = 0; i < nodeTokens.length; i += 3) {
+            // TODO Dont use replace
+            Node node = new Node(nodeTokens[i], new Coordinate(Double.parseDouble(nodeTokens[i + 1].replace(",", ".")),
+                    Double.parseDouble(nodeTokens[i + 2].replace(",", "."))));
+            nameNode.put(nodeTokens[i], node);
+            res.add(node);
+        }
+
+        for (int i = 2; i < lines.length; i++) {
+            String[] edgeData = lines[i].split(";");
+
+            Node from = nameNode.get(edgeData[0]);
+            Node to = nameNode.get(edgeData[1]);
+            try {
+                res.connect(from, to, edgeData[2], Integer.parseInt(edgeData[3]));
+            } catch (IllegalStateException e) {
+                // Connection may already exist because ListGraph creates both directions while both directions are stored individually in the file 
+            }
+        }
+        return res;
+    }
+
+
+    // Event handlers
+    @FXML
+    private void newMapAction() {
+        if (unsavedChanges && !discardChanges()) {
+            return;
+        }
+        clearState();
+        setImage(DEFAULT_MAP_FILE);
+        this.listGraph = new ListGraph<>();
+    }
+
     @FXML
     private void findPathAction() {
-        if (!completedSelection()) {
-            // if one or less circles are selected, then prompt the user to select two
-            // circles
-            Alert alert = new Alert(AlertType.ERROR, "Please select two places", ButtonType.OK);
-            alert.setTitle("Error!");
-            alert.setHeaderText("");
-            alert.showAndWait();
+        if (!selectionIsComplete()) {
+            displayError("Please select two places");
             return;
         }
         Node start = drawnNodes.get(circlesSelected[0]);
         Node end = drawnNodes.get(circlesSelected[1]);
         List<Edge<Node>> path = listGraph.getPath(start, end);
         if (path == null) {
-            Alert alert = new Alert(AlertType.ERROR, "No path found", ButtonType.OK);
-            alert.setTitle("Error!");
-            alert.setHeaderText("");
-            alert.showAndWait();
-        } else {
-            Alert alert = new Alert(AlertType.INFORMATION, "Path found", ButtonType.OK);
-            alert.setTitle("%s to %s".formatted(start.getName(), end.getName()));
-            alert.setHeaderText("");
-            String trajectory = "";
-            int total = 0;
-            for (int i = 0; i < path.size(); i++) {
-                Edge<Node> edge = path.get(i);
-                total += edge.getWeight();
-                String from = i == 0 ? start.getName() : path.get(i - 1).getDestination().getName();
-                trajectory += "%s to %s by %s takes %d \n".formatted(from, edge.getDestination().getName(),
-                        edge.getName(), edge.getWeight());
-            }
-            trajectory += "Total %d".formatted(total);
-            alert.setContentText(trajectory);
-            alert.showAndWait();
+            displayError("No path found");
+            return;
         }
+        Alert alert = new Alert(AlertType.INFORMATION, "Path found", ButtonType.OK);
+        alert.setTitle("%s to %s".formatted(start.getName(), end.getName()));
+        alert.setHeaderText("");
+        String trajectory = "";
+        int total = 0;
+        for (int i = 0; i < path.size(); i++) {
+            Edge<Node> edge = path.get(i);
+            total += edge.getWeight();
+            String from = i == 0 ? start.getName() : path.get(i - 1).getDestination().getName();
+            trajectory += "%s to %s by %s takes %d \n".formatted(from, edge.getDestination().getName(),
+                    edge.getName(), edge.getWeight());
+        }
+        trajectory += "Total %d".formatted(total);
+        alert.setContentText(trajectory);
+        alert.showAndWait();
 
     }
 
     @FXML
     private void newConnectionAction() {
-        if (!completedSelection()) {
+        if (!selectionIsComplete()) {
             displayError("Please select two places");
             return;
         }
         Node one = drawnNodes.get(circlesSelected[0]);
         Node two = drawnNodes.get(circlesSelected[1]);
         if (listGraph.hasConnection(one, two)) {
-            Alert alert = new Alert(AlertType.ERROR, "Connection already exists", ButtonType.OK);
-            alert.setTitle("Error!");
-            alert.setHeaderText("");
-            alert.showAndWait();
+            displayError("Connection already exists");
             return;
         }
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Connection");
-        dialog.setHeaderText("Connection from %s to %s".formatted(one.getName(), two.getName()));
+        // TODO This dialog can be generalized
+        Alert alert = new Alert(AlertType.INFORMATION, "", ButtonType.OK);
+        alert.setTitle("Connection");
+        alert.setHeaderText("Connection from %s to %s".formatted(one.getName(), two.getName()));
+
         Label nameLabel = new Label("Name:");
+        TextField nameField = new TextField();
 
         Label weightLabel = new Label("Time:");
         TextField weightField = new TextField();
 
         GridPane grid = new GridPane();
         grid.add(nameLabel, 0, 0);
-        grid.add(dialog.getEditor(), 1, 0);
+        grid.add(nameField, 1, 0);
         grid.add(weightLabel, 0, 1);
         grid.add(weightField, 1, 1);
 
-        dialog.getDialogPane().setContent(grid);
+        alert.getDialogPane().setContent(grid);
 
-        dialog.showAndWait();
+        alert.showAndWait();
 
-        String name = dialog.getEditor().getText();
+        String name = nameField.getText();
         int weight = Integer.parseInt(weightField.getText());
 
         listGraph.connect(one, two, name, weight);
@@ -359,7 +403,7 @@ public class Controller {
 
     @FXML
     private void showConnectionAction() {
-        if (!completedSelection()) {
+        if (!selectionIsComplete()) {
             displayError("Please select two places");
             return;
         }
@@ -370,6 +414,7 @@ public class Controller {
             displayError("No connection exists");
             return;
         }
+        // TODO This dialog can be generalized
         Alert alert = new Alert(AlertType.INFORMATION, "", ButtonType.OK);
         alert.setTitle("Connection");
         alert.setHeaderText("Connection from %s to %s".formatted(one.getName(), two.getName()));
@@ -398,29 +443,26 @@ public class Controller {
 
     @FXML
     private void changeConnectionAction() {
-        if (!completedSelection()) {
-            Alert alert = new Alert(AlertType.ERROR, "Please select two places", ButtonType.OK);
-            alert.setTitle("Error!");
-            alert.setHeaderText("");
-            alert.showAndWait();
+        if (!selectionIsComplete()) {
+            displayError("Please select two places");
             return;
         }
         Node one = drawnNodes.get(circlesSelected[0]);
         Node two = drawnNodes.get(circlesSelected[1]);
         Edge<Node> edge = listGraph.getEdgeBetween(one, two);
         if (edge == null) {
-            Alert alert = new Alert(AlertType.ERROR, "No connection exists", ButtonType.OK);
-            alert.setTitle("Error!");
-            alert.setHeaderText("");
-            alert.showAndWait();
+            displayError("No connection exists");
             return;
         }
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Connection");
-        dialog.setHeaderText("Connection from %s to %s".formatted(one.getName(), two.getName()));
+        // TODO This dialog can be generalized
+        Alert alert = new Alert(AlertType.INFORMATION, "", ButtonType.OK);
+        alert.setTitle("Connection");
+        alert.setHeaderText("Connection from %s to %s".formatted(one.getName(), two.getName()));
+
         Label nameLabel = new Label("Name:");
-        dialog.getEditor().setText(edge.getName());
-        dialog.getEditor().setDisable(true);
+        TextField nameField = new TextField();
+        nameField.setText(edge.getName());
+        nameField.setDisable(true);
 
         Label weightLabel = new Label("Time:");
         TextField weightField = new TextField();
@@ -428,12 +470,13 @@ public class Controller {
 
         GridPane grid = new GridPane();
         grid.add(nameLabel, 0, 0);
-        grid.add(dialog.getEditor(), 1, 0);
+        grid.add(nameField, 1, 0);
         grid.add(weightLabel, 0, 1);
         grid.add(weightField, 1, 1);
 
-        dialog.getDialogPane().setContent(grid);
-        dialog.showAndWait();
+        alert.getDialogPane().setContent(grid);
+
+        alert.showAndWait();
 
         int weight;
         try {
@@ -462,41 +505,10 @@ public class Controller {
         try {
             setImage(lines.split("\n")[0].split(":")[1]);
         } catch (IllegalArgumentException e) {
-            Alert alert = new Alert(AlertType.ERROR, "", ButtonType.OK);
-            alert.setTitle("Error!");
-            alert.setHeaderText(e.getMessage());
-            alert.showAndWait();
+            displayError("IllegalArgumentException: " + e.getMessage());
             return;
         }
         drawMap();
-    }
-
-    private ListGraph<Node> deserialize(String input) {
-        ListGraph<Node> res = new ListGraph<>();
-        String[] lines = input.split("\n");
-        HashMap<String, Node> nameNode = new HashMap<>();
-
-        String[] nodeTokens = lines[1].split(";");
-        for (int i = 0; i < nodeTokens.length; i += 3) {
-            // TODO Dont use replace
-            Node node = new Node(nodeTokens[i], new Coordinate(Double.parseDouble(nodeTokens[i + 1].replace(",", ".")),
-                    Double.parseDouble(nodeTokens[i + 2].replace(",", "."))));
-            nameNode.put(nodeTokens[i], node);
-            res.add(node);
-        }
-
-        for (int i = 2; i < lines.length; i++) {
-            String[] edgeData = lines[i].split(";");
-
-            Node from = nameNode.get(edgeData[0]);
-            Node to = nameNode.get(edgeData[1]);
-            try {
-                res.connect(from, to, edgeData[2], Integer.parseInt(edgeData[3]));
-            } catch (IllegalStateException e) {
-                // Connection already created
-            }
-        }
-        return res;
     }
 
     @FXML
@@ -514,28 +526,9 @@ public class Controller {
 
     }
 
-    private String serialize() {
-
-        StringBuilder res = new StringBuilder();
-
-        res.append("file:%s\n".formatted(mapFile));
-        res.append(listGraph.getNodes().stream().map(
-                node -> "%s;%f;%f".formatted(node.getName(), node.getCoordinate().getX(), node.getCoordinate().getY()))
-                .collect(Collectors.joining(";")));
-        res.append("\n");
-        for (Node n : listGraph.getNodes()) {
-            for (Edge<Node> edge : listGraph.getEdgesFrom(n)) {
-                res.append("%s;%s;%s;%d\n".formatted(n.getName(), edge.getDestination().getName(), edge.getName(),
-                        edge.getWeight()));
-            }
-        }
-        return res.toString();
-    }
-
     @FXML
     private void saveImageAction() {
         // Take a screenshot of the window
-        // TODO: Uncomment this, commented as I can't run it locally.
         try {
             WritableImage image = mainPane.snapshot(null, null);
             BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);

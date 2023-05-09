@@ -24,11 +24,7 @@ public class ListGraph<T> implements Graph<T> {
     public Set<T> getNodes() {
         return nodes.keySet();
     }
-
-    // public HashMap<T, HashSet<Edge<T>>> getNodeGraph(){
-    // return (HashMap<T, HashSet<Edge<T>>>) nodes.clone();
-    // }
-
+    
     public HashSet<Edge<T>> getEdgesFrom(T node) throws NoSuchElementException {
         if (nodes.get(node) == null) {
             throw new NoSuchElementException("Node not found");
