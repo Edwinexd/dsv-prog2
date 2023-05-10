@@ -16,7 +16,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
@@ -39,7 +41,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 
@@ -50,7 +51,6 @@ class NodeEdge {
 public class Controller {
 
     private static final String DEFAULT_MAP_FILE = "europa.gif";
-    private static final int NODE_RADIUS = 10;
     private static final int EDGE_WIDTH = 2;
     // TODO: Figure out why this needs to be ~40 + better var name
     private static final int MENU_HEIGHT = 40;
@@ -59,9 +59,12 @@ public class Controller {
     
     private String mapFile = DEFAULT_MAP_FILE;
 
-    private Circle[] circlesSelected = new Circle[2]; // Store selected circles (highlighted in red in the UI);
+    // private Circle[] circlesSelected = new Circle[2]; // Store selected circles (highlighted in red in the UI);
+    private Node[] nodesSelected = new Node[2];
+
     private boolean unsavedChanges = false;
-    private HashMap<Circle, Node> drawnNodes = new HashMap<>();
+    // private HashMap<Circle, Node> drawnNodes = new HashMap<>();
+    private Set<Node> drawnNodes = new HashSet<>();
     private HashMap<Node, HashMap<Edge<Node>, Line>> drawnEdges = new HashMap<>();
 
     // FXML containers
@@ -106,18 +109,16 @@ public class Controller {
     private void clearState() {
         unsavedChanges = false;
         listGraph = null;
-        // Remove elem if in drawnNodes.value or drawnEdges.anykey.anykey.value
+        // Remove elem if in drawnNodes or drawnEdges.anyKey.anyKey.value
         List<Line> lines = new ArrayList<>();
         for (HashMap<Edge<Node>, Line> edges : drawnEdges.values()) {
             lines.addAll(edges.values());
         }
-        outputArea.getChildren().removeIf(elem -> drawnNodes.containsKey(elem) || lines.contains(elem));
+        outputArea.getChildren().removeIf(elem -> drawnNodes.contains(elem) || lines.contains(elem));
         drawnNodes.clear();
         drawnEdges.clear();
-        Arrays.fill(circlesSelected, null);
+        Arrays.fill(nodesSelected, null);
         clearImage();
-        
-
     }
 
     private void displayError(String message) {
@@ -127,22 +128,22 @@ public class Controller {
         alert.showAndWait();
     }
 
-    private boolean selectCircle(Circle circle) {
-        for (int i = 0; i < circlesSelected.length; i++) {
-            if (circlesSelected[i] == circle) {
+    private boolean selectNode(Node node) {
+        for (int i = 0; i < nodesSelected.length; i++) {
+            if (nodesSelected[i] == node) {
                 return false;
-            } else if (circlesSelected[i] == null) {
-                circlesSelected[i] = circle;
+            } else if (nodesSelected[i] == null) {
+                nodesSelected[i] = node;
                 return true;
             }
         }
         return false;
     }
 
-    private boolean unselectCircle(Circle circle) {
-        for (int i = 0; i < circlesSelected.length; i++) {
-            if (circlesSelected[i] == circle) {
-                circlesSelected[i] = null;
+    private boolean unselectNode(Node node) {
+        for (int i = 0; i < nodesSelected.length; i++) {
+            if (nodesSelected[i] == node) {
+                nodesSelected[i] = null;
                 return true;
             }
         }
@@ -150,8 +151,8 @@ public class Controller {
     }
 
     private boolean selectionIsComplete() {
-        for (int i = 0; i < circlesSelected.length; i++) {
-            if (circlesSelected[i] == null) {
+        for (int i = 0; i < nodesSelected.length; i++) {
+            if (nodesSelected[i] == null) {
                 return false;
             }
         }
@@ -159,32 +160,27 @@ public class Controller {
     }
 
     private void drawNode(Node n) {
-        Circle circle = new Circle(n.getCoordinate().getX(), n.getCoordinate().getY(), NODE_RADIUS);
-        circle.setCursor(Cursor.HAND);
-        circle.setFill(javafx.scene.paint.Color.BLUE);
-        circle.onMouseClickedProperty().set(e -> {
-            Circle clickedCircle = (Circle) e.getTarget();
-            if (clickedCircle.getFill() == javafx.scene.paint.Color.BLUE) {
-                if (selectCircle(clickedCircle)) {
-                    clickedCircle.setFill(javafx.scene.paint.Color.RED);
+        n.setOnMouseClicked(e -> {
+            Node clickedNode = (Node) e.getTarget();
+            if (!clickedNode.isSelected()) {
+                if (selectNode(clickedNode)) {
+                    clickedNode.setSelected(true);
                 }
-                ;
             } else {
-                if (unselectCircle(clickedCircle)) {
-                    clickedCircle.setFill(javafx.scene.paint.Color.BLUE);
+                if (unselectNode(clickedNode)) {
+                    clickedNode.setSelected(false);
                 }
             }
 
         });
-        circle.setId(n.getName());
-        drawnNodes.put(circle, n);
-        outputArea.getChildren().add(circle);
+        drawnNodes.add(n);
+        outputArea.getChildren().add(n);
 
     }
 
     private void drawNodes() {
         for (Node n : listGraph.getNodes()) {
-            if (!drawnNodes.values().contains(n)) {
+            if (!drawnNodes.contains(n)) {
                 drawNode(n);
             }
         }
@@ -196,6 +192,7 @@ public class Controller {
         line.setStrokeWidth(EDGE_WIDTH);
         line.setStroke(javafx.scene.paint.Color.BLACK);
         line.setMouseTransparent(true);
+        line.setDisable(true);
         HashMap<Edge<Node>, Line> map = drawnEdges.get(origin);
         if (map == null) {
             map = new HashMap<>();
@@ -229,6 +226,52 @@ public class Controller {
         alert.showAndWait();
 
         return alert.getResult() == ButtonType.OK;
+    }
+
+    private ConnectionDialogResult getConnectionProperties(Node one, Node two, Edge<Node> edge, boolean editableName, boolean editableWeight) {
+        Alert alert = new Alert(AlertType.CONFIRMATION, "");
+        alert.setTitle("Connection");
+        alert.setHeaderText("Connection from %s to %s".formatted(one.getName(), two.getName()));
+
+        Label nameLabel = new Label("Name:");
+        TextField nameField = new TextField();
+        nameField.setDisable(!editableName);
+
+        Label weightLabel = new Label("Time:");
+        TextField weightField = new TextField();
+        weightField.setDisable(!editableWeight);
+
+        if (edge != null) {
+            nameField.setText(edge.getName());
+            weightField.setText(String.valueOf(edge.getWeight()));
+
+        }
+
+        GridPane grid = new GridPane();
+        grid.add(nameLabel, 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(weightLabel, 0, 1);
+        grid.add(weightField, 1, 1);
+
+        alert.getDialogPane().setContent(grid);
+
+        alert.showAndWait();
+
+        if (alert.getResult() != ButtonType.OK) {
+            return null;
+        }
+
+        int weight;
+        try {
+            weight = Integer.parseInt(weightField.getText());
+        } catch (NumberFormatException e) {
+            displayError("Weight must be an integer!");
+            return null;
+        }
+
+        return new ConnectionDialogResult(nameField.getText(), weight);
+        
+        
     }
 
     // Image handling
@@ -334,8 +377,8 @@ public class Controller {
             displayError("Please select two places");
             return;
         }
-        Node start = drawnNodes.get(circlesSelected[0]);
-        Node end = drawnNodes.get(circlesSelected[1]);
+        Node start = nodesSelected[0];
+        Node end = nodesSelected[1];
         List<Edge<Node>> path = listGraph.getPath(start, end);
         if (path == null) {
             displayError("No path found");
@@ -365,37 +408,18 @@ public class Controller {
             displayError("Please select two places");
             return;
         }
-        Node one = drawnNodes.get(circlesSelected[0]);
-        Node two = drawnNodes.get(circlesSelected[1]);
+        Node one = nodesSelected[0];
+        Node two = nodesSelected[1];
         if (listGraph.hasConnection(one, two)) {
             displayError("Connection already exists");
             return;
         }
-        // TODO This dialog can be generalized
-        Alert alert = new Alert(AlertType.INFORMATION, "", ButtonType.OK);
-        alert.setTitle("Connection");
-        alert.setHeaderText("Connection from %s to %s".formatted(one.getName(), two.getName()));
-
-        Label nameLabel = new Label("Name:");
-        TextField nameField = new TextField();
-
-        Label weightLabel = new Label("Time:");
-        TextField weightField = new TextField();
-
-        GridPane grid = new GridPane();
-        grid.add(nameLabel, 0, 0);
-        grid.add(nameField, 1, 0);
-        grid.add(weightLabel, 0, 1);
-        grid.add(weightField, 1, 1);
-
-        alert.getDialogPane().setContent(grid);
-
-        alert.showAndWait();
-
-        String name = nameField.getText();
-        int weight = Integer.parseInt(weightField.getText());
-
-        listGraph.connect(one, two, name, weight);
+        ConnectionDialogResult result = getConnectionProperties(one, two, null, true, true);
+        if (result == null) {
+            return;
+        }
+        
+        listGraph.connect(one, two, result.getName(), result.getWeight());
         unsavedChanges = true;
         drawMap();
 
@@ -407,38 +431,14 @@ public class Controller {
             displayError("Please select two places");
             return;
         }
-        Node one = drawnNodes.get(circlesSelected[0]);
-        Node two = drawnNodes.get(circlesSelected[1]);
+        Node one = nodesSelected[0];
+        Node two = nodesSelected[1];
         Edge<Node> e = listGraph.getEdgeBetween(one, two);
         if (e == null) {
             displayError("No connection exists");
             return;
         }
-        // TODO This dialog can be generalized
-        Alert alert = new Alert(AlertType.INFORMATION, "", ButtonType.OK);
-        alert.setTitle("Connection");
-        alert.setHeaderText("Connection from %s to %s".formatted(one.getName(), two.getName()));
-
-        Label nameLabel = new Label("Name:");
-        TextField nameField = new TextField();
-        nameField.setText(e.getName());
-        nameField.setDisable(true);
-
-        Label weightLabel = new Label("Time:");
-        TextField weightField = new TextField();
-        weightField.setText(String.valueOf(e.getWeight()));
-        weightField.setDisable(true);
-
-        GridPane grid = new GridPane();
-        grid.add(nameLabel, 0, 0);
-        grid.add(nameField, 1, 0);
-        grid.add(weightLabel, 0, 1);
-        grid.add(weightField, 1, 1);
-
-        alert.getDialogPane().setContent(grid);
-
-        alert.showAndWait();
-
+        getConnectionProperties(one, two, e, false, false);
     }
 
     @FXML
@@ -447,46 +447,20 @@ public class Controller {
             displayError("Please select two places");
             return;
         }
-        Node one = drawnNodes.get(circlesSelected[0]);
-        Node two = drawnNodes.get(circlesSelected[1]);
+        Node one = nodesSelected[0];
+        Node two = nodesSelected[1];
         Edge<Node> edge = listGraph.getEdgeBetween(one, two);
         if (edge == null) {
             displayError("No connection exists");
             return;
         }
-        // TODO This dialog can be generalized
-        Alert alert = new Alert(AlertType.INFORMATION, "", ButtonType.OK);
-        alert.setTitle("Connection");
-        alert.setHeaderText("Connection from %s to %s".formatted(one.getName(), two.getName()));
-
-        Label nameLabel = new Label("Name:");
-        TextField nameField = new TextField();
-        nameField.setText(edge.getName());
-        nameField.setDisable(true);
-
-        Label weightLabel = new Label("Time:");
-        TextField weightField = new TextField();
-        weightField.setText(String.valueOf(edge.getWeight()));
-
-        GridPane grid = new GridPane();
-        grid.add(nameLabel, 0, 0);
-        grid.add(nameField, 1, 0);
-        grid.add(weightLabel, 0, 1);
-        grid.add(weightField, 1, 1);
-
-        alert.getDialogPane().setContent(grid);
-
-        alert.showAndWait();
-
-        int weight;
-        try {
-            weight = Integer.parseInt(weightField.getText());
-        } catch (NumberFormatException e) {
-            displayError("Weight must be an integer!");
+        ConnectionDialogResult result = getConnectionProperties(one, two, edge, false, true);
+        if (result == null) {
             return;
         }
+
         try {
-            listGraph.setConnectionWeight(one, two, weight);
+            listGraph.setConnectionWeight(one, two, result.getWeight());
         } catch (IllegalArgumentException e) {
             displayError(e.getMessage());
             return;
