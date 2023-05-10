@@ -1,3 +1,10 @@
+/*
+* PROG2 VT2023, Inlämningsuppgift, del 1
+* Grupp 069
+* Erik Lind Gou-Said - erli1872
+* Edwin Sundberg - edsu8469
+*/
+
 package com.gouswin;
 
 import java.util.ArrayList;
@@ -11,11 +18,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
-
-/*
-    Erik Lind Gou-Said - erli1872
-    Edwin Sundberg - edsu8469
-*/
 
 public class ListGraph<T> implements Graph<T> {
 

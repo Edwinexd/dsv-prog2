@@ -1,8 +1,12 @@
-package com.gouswin;
 /*
-    Erik Lind Gou-Said - erli1872
-    Edwin Sundberg - edsu
- */
+* PROG2 VT2023, Inlämningsuppgift, del 1
+* Grupp 069
+* Erik Lind Gou-Said - erli1872
+* Edwin Sundberg - edsu8469
+*/
+
+package com.gouswin;
+
 public class Edge<T> {
 
     private int weight;

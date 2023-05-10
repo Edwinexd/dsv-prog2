@@ -1,10 +1,11 @@
-package com.gouswin;
-
 /*
-    Erik Lind Gou-Said - erli1872
-    Edwin Sundberg - edsu
- */
+* PROG2 VT2023, Inlämningsuppgift, del 2
+* Grupp 069
+* Erik Lind Gou-Said - erli1872
+* Edwin Sundberg - edsu8469
+*/
 
+package com.gouswin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,26 +55,25 @@ public class Controller {
     private static final int EDGE_WIDTH = 2;
     // TODO: Figure out why this needs to be ~40 + better var name
     private static final int MENU_HEIGHT = 40;
-    
+
     private ListGraph<Node> listGraph = null;
-    
+
     private String mapFile = DEFAULT_MAP_FILE;
 
-    // private Circle[] circlesSelected = new Circle[2]; // Store selected circles (highlighted in red in the UI);
+    // (highlighted in red in the UI);
     private Node[] nodesSelected = new Node[2];
 
     private boolean unsavedChanges = false;
-    // private HashMap<Circle, Node> drawnNodes = new HashMap<>();
     private Set<Node> drawnNodes = new HashSet<>();
     private HashMap<Node, HashMap<Edge<Node>, Line>> drawnEdges = new HashMap<>();
 
     // FXML containers
     @FXML
     private BorderPane mainPane; // Wrapper around the entire UI
-    
+
     @FXML
     private Pane outputArea; // Container for the map image along with nodes and edges
-    
+
     @FXML
     private Pane navPane; // Wrapper around the navigation UI
 
@@ -228,7 +228,8 @@ public class Controller {
         return alert.getResult() == ButtonType.OK;
     }
 
-    private ConnectionDialogResult getConnectionProperties(Node one, Node two, Edge<Node> edge, boolean editableName, boolean editableWeight) {
+    private ConnectionDialogResult getConnectionProperties(Node one, Node two, Edge<Node> edge, boolean editableName,
+            boolean editableWeight) {
         Alert alert = new Alert(AlertType.CONFIRMATION, "");
         alert.setTitle("Connection");
         alert.setHeaderText("Connection from %s to %s".formatted(one.getName(), two.getName()));
@@ -270,8 +271,7 @@ public class Controller {
         }
 
         return new ConnectionDialogResult(nameField.getText(), weight);
-        
-        
+
     }
 
     // Image handling
@@ -353,12 +353,12 @@ public class Controller {
             try {
                 res.connect(from, to, edgeData[2], Integer.parseInt(edgeData[3]));
             } catch (IllegalStateException e) {
-                // Connection may already exist because ListGraph creates both directions while both directions are stored individually in the file 
+                // Connection may already exist because ListGraph creates both directions while
+                // both directions are stored individually in the file
             }
         }
         return res;
     }
-
 
     // Event handlers
     @FXML
@@ -418,7 +418,7 @@ public class Controller {
         if (result == null) {
             return;
         }
-        
+
         listGraph.connect(one, two, result.getName(), result.getWeight());
         unsavedChanges = true;
         drawMap();
@@ -502,7 +502,6 @@ public class Controller {
 
     @FXML
     private void saveImageAction() {
-        // Take a screenshot of the window
         try {
             WritableImage image = mainPane.snapshot(null, null);
             BufferedImage bufferedImage = SwingFXUtils.fromFXImage(image, null);
@@ -531,7 +530,6 @@ public class Controller {
             map.setOnMouseClicked(null);
             map.setCursor(Cursor.DEFAULT);
             btnNewPlace.setDisable(false);
-            // Have user input location name
             TextInputDialog dialog = new TextInputDialog();
             dialog.setTitle("Name");
             dialog.setHeaderText("");
@@ -539,7 +537,6 @@ public class Controller {
             dialog.showAndWait();
             String res = dialog.getResult();
             if (res != null) {
-                // Check if name already exists
                 if (listGraph.getNodes().stream().anyMatch(node -> node.getName().equals(res))) {
                     displayError("The name " + res + " is already in use!");
                     return;
