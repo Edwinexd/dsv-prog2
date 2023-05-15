@@ -386,7 +386,7 @@ public class Controller {
         }
         Alert alert = new Alert(AlertType.INFORMATION, "Path found", ButtonType.OK);
         alert.setTitle("%s to %s".formatted(start.getName(), end.getName()));
-        alert.setHeaderText("");
+        alert.setHeaderText("The path from %s to %s:".formatted(start.getName(), end.getName()));
         String trajectory = "";
         int total = 0;
         for (int i = 0; i < path.size(); i++) {
