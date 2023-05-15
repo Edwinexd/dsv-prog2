@@ -60,7 +60,6 @@ public class Controller {
 
     private String mapFile = DEFAULT_MAP_FILE;
 
-    // (highlighted in red in the UI);
     private Node[] nodesSelected = new Node[2];
 
     private boolean unsavedChanges = false;
@@ -369,6 +368,7 @@ public class Controller {
         clearState();
         setImage(DEFAULT_MAP_FILE);
         this.listGraph = new ListGraph<>();
+        unsavedChanges = true;
     }
 
     @FXML
