@@ -8,13 +8,12 @@
 package com.gouswin;
 
 import java.util.Arrays;
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -343,12 +342,11 @@ public class Controller {
         return res.toString();
     }
 
-    private ListGraph<Node> deserialize(String input) {
+    private ListGraph<Node> deserialize(List<String> lines) {
         ListGraph<Node> res = new ListGraph<>();
-        String[] lines = input.split("\n");
         HashMap<String, Node> nameNode = new HashMap<>();
 
-        String[] nodeTokens = lines[1].split(";");
+        String[] nodeTokens = lines.get(1).split(";");
         for (int i = 0; i < nodeTokens.length; i += 3) {
             Node node = new Node(nodeTokens[i], new Coordinate(Double.parseDouble(nodeTokens[i + 1]),
                     Double.parseDouble(nodeTokens[i + 2])));
@@ -356,8 +354,8 @@ public class Controller {
             res.add(node);
         }
 
-        for (int i = 2; i < lines.length; i++) {
-            String[] edgeData = lines[i].split(";");
+        for (int i = 2; i < lines.size(); i++) {
+            String[] edgeData = lines.get(i).split(";");
 
             Node from = nameNode.get(edgeData[0]);
             Node to = nameNode.get(edgeData[1]);
@@ -489,10 +487,15 @@ public class Controller {
             return;
         }
         clearState();
-        String lines = String.join("\n", Files.readAllLines(Paths.get(SAVE_FILE), StandardCharsets.UTF_8));
+
+        List<String> lines = null;
+        try (BufferedReader reader = new BufferedReader(new FileReader(SAVE_FILE))) {
+            lines = reader.lines().toList();
+        }
+
         this.listGraph = deserialize(lines);
         try {
-            setImage(lines.split("\n")[0].split(":")[1]);
+            setImage(lines.get(0).split(":")[1]);
         } catch (IllegalArgumentException e) {
             displayError("IllegalArgumentException: " + e.getMessage());
             return;
@@ -510,8 +513,7 @@ public class Controller {
             return;
         }
         String output = serialize();
-        try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(SAVE_FILE),
-                StandardCharsets.UTF_8)) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(SAVE_FILE))) {
             writer.write(output);
         }
         unsavedChanges = false;
