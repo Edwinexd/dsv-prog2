@@ -7,7 +7,6 @@
 
 package com.gouswin;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,26 +44,25 @@ import javafx.scene.layout.Pane;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 
-class NodeEdge {
-
-}
-
 public class Controller {
 
     private static final String DEFAULT_MAP_FILE = "europa.gif";
+    private static final String SAVE_FILE = "europa.graph";
     private static final int EDGE_WIDTH = 2;
     // TODO: Figure out why this needs to be ~40 + better var name
+    // We're unable to find the root cause of this but setting the Stage's height to
+    // the navPane.height + outputArea.height
+    // results in the window being just too small to display the entire map
     private static final int MENU_HEIGHT = 40;
 
+    // State
     private ListGraph<Node> listGraph = null;
-
     private String mapFile = DEFAULT_MAP_FILE;
-
     private Node[] nodesSelected = new Node[2];
-
     private boolean unsavedChanges = false;
     private Set<Node> drawnNodes = new HashSet<>();
     private HashMap<Node, HashMap<Edge<Node>, Line>> drawnEdges = new HashMap<>();
+    private boolean stateButtonsDisabled = true;
 
     // FXML containers
     @FXML
@@ -94,7 +92,15 @@ public class Controller {
 
     // Buttons
     @FXML
+    private Button btnFindPath;
+    @FXML
+    private Button btnShowConnection;
+    @FXML
     private Button btnNewPlace;
+    @FXML
+    private Button btnNewConnection;
+    @FXML
+    private Button btnChangeConnection;
 
     // Helper methods
     public void setup(Stage stage) {
@@ -105,14 +111,22 @@ public class Controller {
         });
     }
 
+    private void enableStateButtons() {
+        for (Button btn : Arrays.asList(btnFindPath, btnShowConnection, btnNewPlace, btnNewConnection,
+                btnChangeConnection)) {
+            btn.setDisable(false);
+        }
+        for (MenuItem item : Arrays.asList(menuSaveFile, menuSaveImage)) {
+            item.setDisable(false);
+        }
+        stateButtonsDisabled = false;
+    }
+
     private void clearState() {
         unsavedChanges = false;
         listGraph = null;
         // Remove elem if in drawnNodes or drawnEdges.anyKey.anyKey.value
-        List<Line> lines = new ArrayList<>();
-        for (HashMap<Edge<Node>, Line> edges : drawnEdges.values()) {
-            lines.addAll(edges.values());
-        }
+        List<Line> lines = drawnEdges.values().stream().flatMap(edges -> edges.values().stream()).toList();
         outputArea.getChildren().removeIf(elem -> drawnNodes.contains(elem) || lines.contains(elem));
         drawnNodes.clear();
         drawnEdges.clear();
@@ -121,7 +135,7 @@ public class Controller {
     }
 
     private void displayError(String message) {
-        Alert alert = new Alert(AlertType.ERROR, message, ButtonType.OK);
+        Alert alert = new Alert(AlertType.ERROR, message);
         alert.setTitle("Error!");
         alert.setHeaderText("");
         alert.showAndWait();
@@ -218,8 +232,7 @@ public class Controller {
     }
 
     private boolean discardChanges() {
-        Alert alert = new Alert(AlertType.CONFIRMATION, "Unsaved changes, continue anyway?", ButtonType.OK,
-                ButtonType.CANCEL);
+        Alert alert = new Alert(AlertType.CONFIRMATION, "Unsaved changes, continue anyway?");
         alert.setTitle("Warning!");
         alert.setHeaderText("");
         alert.showAndWait();
@@ -337,9 +350,8 @@ public class Controller {
 
         String[] nodeTokens = lines[1].split(";");
         for (int i = 0; i < nodeTokens.length; i += 3) {
-            // TODO Dont use replace
-            Node node = new Node(nodeTokens[i], new Coordinate(Double.parseDouble(nodeTokens[i + 1].replace(",", ".")),
-                    Double.parseDouble(nodeTokens[i + 2].replace(",", "."))));
+            Node node = new Node(nodeTokens[i], new Coordinate(Double.parseDouble(nodeTokens[i + 1]),
+                    Double.parseDouble(nodeTokens[i + 2])));
             nameNode.put(nodeTokens[i], node);
             res.add(node);
         }
@@ -369,6 +381,9 @@ public class Controller {
         setImage(DEFAULT_MAP_FILE);
         this.listGraph = new ListGraph<>();
         unsavedChanges = true;
+        if (stateButtonsDisabled) {
+            enableStateButtons();
+        }
     }
 
     @FXML
@@ -474,13 +489,16 @@ public class Controller {
             return;
         }
         clearState();
-        String lines = String.join("\n", Files.readAllLines(Paths.get("europa.graph"), StandardCharsets.UTF_8));
+        String lines = String.join("\n", Files.readAllLines(Paths.get(SAVE_FILE), StandardCharsets.UTF_8));
         this.listGraph = deserialize(lines);
         try {
             setImage(lines.split("\n")[0].split(":")[1]);
         } catch (IllegalArgumentException e) {
             displayError("IllegalArgumentException: " + e.getMessage());
             return;
+        }
+        if (stateButtonsDisabled) {
+            enableStateButtons();
         }
         drawMap();
     }
@@ -492,12 +510,11 @@ public class Controller {
             return;
         }
         String output = serialize();
-        try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream("europa.graph"),
+        try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(SAVE_FILE),
                 StandardCharsets.UTF_8)) {
             writer.write(output);
         }
         unsavedChanges = false;
-
     }
 
     @FXML

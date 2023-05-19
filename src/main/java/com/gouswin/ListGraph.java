@@ -49,16 +49,10 @@ public class ListGraph<T> implements Graph<T> {
             throw new NoSuchElementException("Node not found");
         }
 
-        List<T> destNode = new ArrayList<>();
 
-        for (Edge<T> edge : nodes.get(node)) {
-            destNode.add(edge.getDestination());
+        List<T> destNodes = nodes.get(node).stream().map(edge -> edge.getDestination()).toList();
 
-        }
-
-        destNode.forEach(dest -> disconnect(node, dest));
-
-        nodes.get(node).clear();
+        destNodes.forEach(dest -> disconnect(node, dest));
 
         nodes.remove(node);
     }
@@ -69,22 +63,23 @@ public class ListGraph<T> implements Graph<T> {
 
     public void connect(T from, T to, String name, int weight)
             throws IllegalArgumentException, IllegalStateException, NoSuchElementException {
+        
+        nodesExists(from, to);
         if (from.equals(to)) {
             throw new IllegalArgumentException("Cannot connect a node to itself");
         }
         if (weight < 0) {
             throw new IllegalArgumentException("Weight cannot be negative");
         }
-        nodesExists(from, to);
         if (hasConnection(from, to)) {
             throw new IllegalStateException("Nodes are already connected");
         }
-        // TODO Review @Edwin
-        Edge<T> fromedge = new Edge<T>(to, weight, name);
-        nodes.get(from).add(fromedge);
 
-        Edge<T> toedge = new Edge<T>(from, weight, name);
-        nodes.get(to).add(toedge);
+        Edge<T> fromEdge = new Edge<T>(to, weight, name);
+        nodes.get(from).add(fromEdge);
+
+        Edge<T> toEdge = new Edge<T>(from, weight, name);
+        nodes.get(to).add(toEdge);
     }
 
     public void disconnect(T from, T to) throws NoSuchElementException, IllegalStateException {

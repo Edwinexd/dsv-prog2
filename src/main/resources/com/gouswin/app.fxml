@@ -20,25 +20,29 @@
 <?import javafx.scene.text.Font?>
 
 <BorderPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
-   minWidth="-Infinity" prefHeight="79.0" prefWidth="579.0" xmlns="http://javafx.com/javafx/19"
+   minWidth="-Infinity" prefHeight="79.0" prefWidth="579.0" xmlns="http://javafx.com/javafx/17"
    xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gouswin.Controller">
    <top>
       <!-- Navpane stretches entire scene width -->
       <BorderPane fx:id="navPane" prefWidth="${mainPane.width}">
          <top>
             <!-- Pref width should be to fill navPane -->
-            <MenuBar prefHeight="26.0" prefWidth="${navPane.width}" BorderPane.alignment="CENTER" fx:id="menu">
+            <MenuBar prefHeight="26.0" prefWidth="${navPane.width}" BorderPane.alignment="CENTER"
+               fx:id="menu">
                <menus>
                   <Menu mnemonicParsing="false" text="File" fx:id="menuFile">
                      <items>
-                        <MenuItem fx:id="menuNewMap" mnemonicParsing="false" onAction="#newMapAction"
+                        <MenuItem fx:id="menuNewMap" mnemonicParsing="false"
+                           onAction="#newMapAction"
                            text="New Map" />
-                        <MenuItem fx:id="menuOpenFile" mnemonicParsing="false" onAction="#openMapAction"
+                        <MenuItem fx:id="menuOpenFile" mnemonicParsing="false"
+                           onAction="#openMapAction"
                            text="Open" />
-                        <MenuItem fx:id="menuSaveFile" mnemonicParsing="false" onAction="#saveMapAction"
-                           text="Save" />
+                        <MenuItem fx:id="menuSaveFile" mnemonicParsing="false"
+                           onAction="#saveMapAction"
+                           text="Save" disable="true" />
                         <MenuItem fx:id="menuSaveImage" mnemonicParsing="false"
-                           onAction="#saveImageAction" text="Save Image" />
+                           onAction="#saveImageAction" text="Save Image" disable="true" />
                         <MenuItem fx:id="menuExit" mnemonicParsing="false" onAction="#exitAction"
                            text="Exit" />
                      </items>
@@ -49,7 +53,8 @@
          <bottom>
             <ButtonBar buttonMinWidth="0.0" prefHeight="40.0" BorderPane.alignment="CENTER_LEFT">
                <buttons>
-                  <Button onAction="#findPathAction" text="Find Path" fx:id="btnFindPath">
+                  <Button onAction="#findPathAction" text="Find Path" fx:id="btnFindPath"
+                     disable="true">
                      <font>
                         <Font size="10.0" />
                      </font>
@@ -57,7 +62,8 @@
                         <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
                      </padding>
                   </Button>
-                  <Button text="Show Connection" onAction="#showConnectionAction" fx:id="btnShowConnection">
+                  <Button text="Show Connection" onAction="#showConnectionAction"
+                     fx:id="btnShowConnection" disable="true">
                      <font>
                         <Font size="10.0" />
                      </font>
@@ -65,7 +71,8 @@
                         <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
                      </padding>
                   </Button>
-                  <Button onAction="#newPlaceAction" text="New Place" fx:id="btnNewPlace">
+                  <Button onAction="#newPlaceAction" text="New Place" fx:id="btnNewPlace"
+                     disable="true">
                      <font>
                         <Font size="10.0" />
                      </font>
@@ -73,7 +80,8 @@
                         <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
                      </padding>
                   </Button>
-                  <Button onAction="#newConnectionAction" text="New Connection" fx:id="btnNewConnection">
+                  <Button onAction="#newConnectionAction" text="New Connection"
+                     fx:id="btnNewConnection" disable="true">
                      <font>
                         <Font size="10.0" />
                      </font>
@@ -81,7 +89,8 @@
                         <Insets bottom="7.0" left="7.0" right="7.0" top="7.0" />
                      </padding>
                   </Button>
-                  <Button onAction="#changeConnectionAction" text="Change Connection" fx:id="btnChangeConnection">
+                  <Button onAction="#changeConnectionAction" text="Change Connection"
+                     fx:id="btnChangeConnection" disable="true">
                      <font>
                         <Font size="10.0" />
                      </font>
